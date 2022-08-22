@@ -170,3 +170,8 @@ The name can only contain English and numeric characters. Any other character is
 It's okay to use **PostgreSQL** or **MariaDB**.
 
 Note: since this project supports short lifetime links, we can use other databases too. but it's possible to use SQL and delete old rows.
+
+## Authors
+
+- Ahmad ...
+- Max Base
