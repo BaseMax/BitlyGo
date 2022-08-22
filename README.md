@@ -4,6 +4,9 @@ URL Shortener - Short URLs &amp; Custom Free Link Powered by Goland and ... data
 
 ## Routes
 
+### `GET /`
+
+This route will show this README to show the features of the projects to everyone.
 
 ### `GET /search`
 
@@ -12,9 +15,54 @@ We will remove and skip all non-English and non-Digits characters and after that
 
 - POSITIVE INT `limit` (default is 10, Minimum value is 1 and Maximum is 100. Otherwise, throw an error!)
 
+Example response:
+
+```json
+{
+   "status": true,
+   "items": {
+    "google": "https://google.com",
+    "facebook": "https://fb.com/?from_my_site",
+    "telegram": "https://t.me/"
+   }
+}
+```
+
+OR
+
+```json
+{
+   "status": false,
+   "error": "Error message"
+}
+```
+
+
 ### `GET /expire-soon`
 
 - POSITIVE INT `limit` (default is 10, Minimum value is 1 and Maximum is 100. Otherwise, throw an error!)
+
+Example response:
+
+```json
+{
+   "status": true,
+   "items": {
+    "google": "https://google.com",
+    "facebook": "https://fb.com/?from_my_site",
+    "telegram": "https://t.me/"
+   }
+}
+```
+
+OR
+
+```json
+{
+   "status": false,
+   "error": "Error message"
+}
+```
 
 ### `POST /add`
 
@@ -23,8 +71,12 @@ We will remove and skip all non-English and non-Digits characters and after that
 - STRING `link` (required, and we will check the link should be valid and pass URL standard format)
 About link value: we must support **UTF-8** characters or query values.
 
+If you send `API-KEY` in the headers, your short link will be alive for ever, otherwise, all links you are creating will only live for 2 days. It should be nice to easily config this limitation inside the source.
+
+Note: you cannot create a duplicate name and It should throw an error. But it's okay to store the same link in different names.
+
 ## Database
 
-It's okay to use PostgreSQL or MariaDB.
+It's okay to use **PostgreSQL** or **MariaDB**.
 
 Note: since this project supports short lifetime links, we can use other databases too. but it's possible to use SQL and delete old rows.
