@@ -37,6 +37,43 @@ OR
 }
 ```
 
+### `GET /top`
+
+- POSITIVE INT `limit` (default is 10, Minimum value is 1 and Maximum is 100. Otherwise, throw an error!)
+
+Example response:
+
+```json
+{
+   "status": true,
+   "items": [
+      {
+         "name": "google",
+         "link": "https://google.com",
+         "visits": 300
+      },
+      {
+         "name": "github",
+         "link": "https://github.com/test",
+         "visits": 255
+      },
+      {
+         "name": "fb",
+         "link": "https://fb.com",
+         "visits": 200
+      }
+   }
+}
+```
+
+OR
+
+```json
+{
+   "status": false,
+   "error": "Error message"
+}
+```
 
 ### `GET /expire-soon`
 
@@ -122,7 +159,7 @@ OR
 }
 ```
 
-**Important NOTE:** Note that `search` and `add` and `expire-soon` are not allowed for names and we should make sure it's not allowed to create such names. since they are already reserved in the router.
+**Important NOTE:** Note that `search`, `add`, `expire-soon`, and `top` are not allowed for names and we should make sure it's not allowed to create such names. since they are already reserved in the router.
 
 The **minimum** allowed name length is 4 and the **maximum** is 25.
 
