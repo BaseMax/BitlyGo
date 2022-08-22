@@ -126,6 +126,8 @@ OR
 
 The **minimum** allowed name length is 4 and the **maximum** is 25.
 
+The name can only contain English and numeric characters. Any other character is ignored.
+
 ## Database
 
 It's okay to use **PostgreSQL** or **MariaDB**.
