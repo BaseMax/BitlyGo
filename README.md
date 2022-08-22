@@ -62,7 +62,7 @@ Example response:
          "link": "https://fb.com",
          "visits": 200
       }
-   }
+   ]
 }
 ```
 
