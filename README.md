@@ -75,6 +75,29 @@ If you send `API-KEY` in the headers, your short link will be alive for ever, ot
 
 Note: you cannot create a duplicate name and It should throw an error. But it's okay to store the same link in different names.
 
+
+### `DELETE /:name` or `DELETE /:name/`
+
+You can only delete links created by an API-KEY.
+So if the owner of that link is same as your API-KEY, you are allowed to delete.
+
+Example response:
+
+```json
+{
+   "status": true
+}
+```
+
+OR
+
+```json
+{
+   "status": false,
+   "error": "Sorry, no permission"
+}
+```
+
 ## Database
 
 It's okay to use **PostgreSQL** or **MariaDB**.
