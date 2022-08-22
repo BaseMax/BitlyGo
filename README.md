@@ -64,7 +64,7 @@ OR
 }
 ```
 
-### `POST /add`
+### `POST /add` or `POST /add/`
 
 - STRING `name` (optional, If not defined, we will generate a short and unique random name)
 
@@ -75,6 +75,20 @@ If you send `API-KEY` in the headers, your short link will be alive for ever, ot
 
 Note: you cannot create a duplicate name and It should throw an error. But it's okay to store the same link in different names.
 
+### `POST /:name` or `POST /:name/`
+
+- STRING `link` (required, and we will check the link should be valid and pass URL standard format)
+About link value: we must support **UTF-8** characters or query values.
+
+If you send `API-KEY` in the headers, your short link will be alive for ever, otherwise, all links you are creating will only live for 2 days. It should be nice to easily config this limitation inside the source.
+
+Note: you cannot create a duplicate name and It should throw an error. But it's okay to store the same link in different names.
+
+### `GET /:name`
+
+If the name is available on the databases. we will redirect the clients to the target URL. 301 redirect is fine.
+
+Otherwise, we should alert that is a 404 (HTTP Status) route and display a 404 warning.
 
 ### `UPDATE /:name`
 
@@ -107,6 +121,8 @@ OR
    "error": "Sorry, no permission"
 }
 ```
+
+**Important NOTE:** Note that `search` and `add` and `expire-soon` are not allowed for names and we should make sure it's not allowed to create such names. since they are already reserved in the router.
 
 ## Database
 
