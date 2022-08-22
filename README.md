@@ -124,6 +124,8 @@ OR
 
 **Important NOTE:** Note that `search` and `add` and `expire-soon` are not allowed for names and we should make sure it's not allowed to create such names. since they are already reserved in the router.
 
+The **minimum** allowed name length is 4 and the **maximum** is 25.
+
 ## Database
 
 It's okay to use **PostgreSQL** or **MariaDB**.
