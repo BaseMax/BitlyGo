@@ -76,6 +76,16 @@ If you send `API-KEY` in the headers, your short link will be alive for ever, ot
 Note: you cannot create a duplicate name and It should throw an error. But it's okay to store the same link in different names.
 
 
+### `UPDATE /:name`
+
+- STRING `link` (required, and we will check the link should be valid and pass URL standard format)
+About link value: we must support **UTF-8** characters or query values.
+
+You can only update a link created by an API-KEY.
+So if the owner of that link is same as your API-KEY, you are allowed to update that.
+
+Note: you cannot change the name, you only can change the link value and link that to another new URL.
+
 ### `DELETE /:name` or `DELETE /:name/`
 
 You can only delete links created by an API-KEY.
