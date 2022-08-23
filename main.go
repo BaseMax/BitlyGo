@@ -96,6 +96,7 @@ func main() {
 	port := ":8000"
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.StripSlashes)
 	r.Use(HeaderMiddleware)
 
 	// Handlers
