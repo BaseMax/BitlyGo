@@ -92,6 +92,7 @@ func main() {
 	// Handlers
 	http.HandleFunc("/", RootHandler)
 	http.HandleFunc("/users", UserRegisterHandler)
+	http.HandleFunc("/links", ShowLinksHandler)
 	http.HandleFunc("/links/add", AddLinkHandler)
 
 	fmt.Printf("Server is running on %v...\n", port)
@@ -112,6 +113,15 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 	user.Create()
 	FakeUserDB.Add(user)
 	json.NewEncoder(w).Encode(user.Response())
+}
+
+func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	res := map[string]any{
+		"status": true,
+		"items":  FakeLinkDB.Links,
+	}
+	json.NewEncoder(w).Encode(res)
 }
 
 func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
