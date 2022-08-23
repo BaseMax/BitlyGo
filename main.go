@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -13,6 +15,15 @@ type User struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 	DeletedAt string `json:"deleted_at"`
+}
+
+type UserResponse struct {
+	Username string    `json:"username"`
+	APIKey   uuid.UUID `json:"api_key"`
+}
+
+type UsersRepo struct {
+	Users []User
 }
 
 func main() {
