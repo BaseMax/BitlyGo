@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -132,6 +133,14 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 	var link Link
 	err := json.NewDecoder(req.Body).Decode(&link)
 	CheckError(err)
+	_, err = url.ParseRequestURI(link.Url)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "Invalid URL",
+		})
+		return
+	}
 	link.Create()
 	FakeLinkDB.Add(link)
 	json.NewEncoder(w).Encode(link.Response())
