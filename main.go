@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -24,6 +25,19 @@ type UserResponse struct {
 
 type UsersRepo struct {
 	Users []User
+}
+
+func (u *User) Create() {
+	u.CreatedAt = time.Now().UTC().String()
+	u.UpdatedAt = time.Now().UTC().String()
+}
+
+func (u *User) Response() UserResponse {
+	key := uuid.New()
+	return UserResponse{
+		Username: u.Username,
+		APIKey:   key,
+	}
 }
 
 func main() {
