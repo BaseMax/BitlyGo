@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -40,10 +41,20 @@ func (u *User) Response() UserResponse {
 	}
 }
 
+func (u *UsersRepo) Add(user User) {
+	u.Users = append(u.Users, user)
+}
+
+var (
+	FakeUserDB UsersRepo
+)
+
 func main() {
 	port := ":8000"
 	// Handlers
 	http.HandleFunc("/", RootHandler)
+	http.HandleFunc("/users", UserRegisterHandler)
+
 	fmt.Printf("Server is running on %v...\n", port)
 
 	err := http.ListenAndServe(port, logRequest(http.DefaultServeMux))
@@ -52,6 +63,16 @@ func main() {
 
 func RootHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Documentation"))
+}
+
+func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
+	var user User
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(req.Body).Decode(&user)
+	CheckError(err)
+	user.Create()
+	FakeUserDB.Add(user)
+	json.NewEncoder(w).Encode(user.Response())
 }
 
 func logRequest(handler http.Handler) http.Handler {
