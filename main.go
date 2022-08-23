@@ -19,13 +19,33 @@ type User struct {
 	DeletedAt string `json:"deleted_at"`
 }
 
+type Link struct {
+	Id        uint   `json:"id"`
+	Name      string `json:"name"`
+	Url       string `json:"url"`
+	Visits    uint   `json:"visits"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	DeletedAt string `json:"deleted_at"`
+}
+
 type UserResponse struct {
 	Username string    `json:"username"`
 	APIKey   uuid.UUID `json:"api_key"`
 }
 
+type LinkResponse struct {
+	Name   string `json:"name"`
+	Url    string `json:"url"`
+	Visits uint   `json:"visits"`
+}
+
 type UsersRepo struct {
 	Users []User
+}
+
+type LinksRepo struct {
+	Links []Link
 }
 
 func (u *User) Create() {
@@ -41,12 +61,30 @@ func (u *User) Response() UserResponse {
 	}
 }
 
+func (l *Link) Create() {
+	l.CreatedAt = time.Now().UTC().String()
+	l.UpdatedAt = time.Now().UTC().String()
+}
+
+func (l *Link) Response() LinkResponse {
+	return LinkResponse{
+		Name:   l.Name,
+		Url:    l.Url,
+		Visits: l.Visits,
+	}
+}
+
 func (u *UsersRepo) Add(user User) {
 	u.Users = append(u.Users, user)
 }
 
+func (l *LinksRepo) Add(link Link) {
+	l.Links = append(l.Links, link)
+}
+
 var (
 	FakeUserDB UsersRepo
+	FakeLinkDB LinksRepo
 )
 
 func main() {
