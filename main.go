@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -101,6 +103,7 @@ func main() {
 	r.Post("/users", UserRegisterHandler)
 	r.Get("/links", ShowLinksHandler)
 	r.Post("/links/add", AddLinkHandler)
+	r.Get("/links/top", TopLinksHandler)
 
 	fmt.Printf("Server is running on %v...\n", port)
 
@@ -144,6 +147,33 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 	link.Create()
 	FakeLinkDB.Add(link)
 	json.NewEncoder(w).Encode(link.Response())
+}
+
+func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
+	limitParam, ok := req.URL.Query()["limit"]
+	if !ok || len(limitParam) < 1 {
+		limitParam = append(limitParam, "10")
+	}
+	limit, err := strconv.Atoi(limitParam[0])
+	CheckError(err)
+	if limit < 1 || limit > 100 {
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "limit value should be between 1-100",
+		})
+		return
+	}
+	links := FakeLinkDB.Links
+	if limit > len(links) {
+		limit = len(links)
+	}
+	sort.Slice(links, func(i, j int) bool {
+		return links[i].Visits > links[j].Visits
+	})
+	json.NewEncoder(w).Encode(map[string]any{
+		"status": true,
+		"items":  links[:limit],
+	})
 }
 
 func HeaderMiddleware(next http.Handler) http.Handler {
