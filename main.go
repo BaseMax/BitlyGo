@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 )
 
@@ -89,15 +91,17 @@ var (
 
 func main() {
 	port := ":8000"
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 	// Handlers
-	http.HandleFunc("/", RootHandler)
-	http.HandleFunc("/users", UserRegisterHandler)
-	http.HandleFunc("/links", ShowLinksHandler)
-	http.HandleFunc("/links/add", AddLinkHandler)
+	r.Get("/", RootHandler)
+	r.Post("/users", UserRegisterHandler)
+	r.Get("/links", ShowLinksHandler)
+	r.Post("/links/add", AddLinkHandler)
 
 	fmt.Printf("Server is running on %v...\n", port)
 
-	err := http.ListenAndServe(port, logRequest(http.DefaultServeMux))
+	err := http.ListenAndServe(port, r)
 	CheckError(err)
 }
 
@@ -132,13 +136,6 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 	link.Create()
 	FakeLinkDB.Add(link)
 	json.NewEncoder(w).Encode(link.Response())
-}
-
-func logRequest(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s \n", r.RemoteAddr, r.Method, r.URL)
-		handler.ServeHTTP(w, r)
-	})
 }
 
 func CheckError(err error) {
