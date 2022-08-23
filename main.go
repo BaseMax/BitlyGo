@@ -93,6 +93,8 @@ func main() {
 	port := ":8000"
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(HeaderMiddleware)
+
 	// Handlers
 	r.Get("/", RootHandler)
 	r.Post("/users", UserRegisterHandler)
@@ -111,7 +113,6 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 
 func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 	var user User
-	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(req.Body).Decode(&user)
 	CheckError(err)
 	user.Create()
@@ -120,7 +121,6 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	res := map[string]any{
 		"status": true,
 		"items":  FakeLinkDB.Links,
@@ -130,12 +130,18 @@ func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
 
 func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 	var link Link
-	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(req.Body).Decode(&link)
 	CheckError(err)
 	link.Create()
 	FakeLinkDB.Add(link)
 	json.NewEncoder(w).Encode(link.Response())
+}
+
+func HeaderMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, req)
+	})
 }
 
 func CheckError(err error) {
