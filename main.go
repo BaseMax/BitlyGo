@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,35 +9,35 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type User struct {
-	Id        uint   `json:"id"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	DeletedAt string `json:"deleted_at"`
+	Id        uint   `json:"id" db:"id"`
+	Username  string `json:"username" db:"username"`
+	Password  string `json:"password" db:"password"`
+	CreatedAt int64  `json:"created_at" db:"created_at"`
+	UpdatedAt int64  `json:"updated_at" db:"updated_at"`
+	DeletedAt int64  `json:"deleted_at" db:"deleted_at"`
 }
 
 type Link struct {
-	Id        uint   `json:"id"`
-	Name      string `json:"name"`
-	Url       string `json:"url"`
-	Visits    uint   `json:"visits"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	DeletedAt string `json:"deleted_at"`
+	Id        uint   `json:"id" db:"id"`
+	Name      string `json:"name" db:"name"`
+	Url       string `json:"url" db:"url"`
+	Visits    uint   `json:"visits" db:"visits"`
+	CreatedAt int64  `json:"created_at" db:"created_at"`
+	UpdatedAt int64  `json:"updated_at" db:"updated_at"`
+	DeletedAt int64  `json:"deleted_at" db:"deleted_at"`
 }
 
 type UserResponse struct {
-	Username string    `json:"username"`
-	APIKey   uuid.UUID `json:"api_key"`
+	Username string `json:"username"`
+	APIKey   string `json:"api_key"`
 }
 
 type LinkResponse struct {
@@ -53,22 +54,11 @@ type LinksRepo struct {
 	Links []Link
 }
 
-func (u *User) Create() {
-	u.CreatedAt = time.Now().UTC().String()
-	u.UpdatedAt = time.Now().UTC().String()
-}
-
-func (u *User) Response() UserResponse {
-	key := uuid.New()
+func (u *User) Response(apiKey string) UserResponse {
 	return UserResponse{
 		Username: u.Username,
-		APIKey:   key,
+		APIKey:   apiKey,
 	}
-}
-
-func (l *Link) Create() {
-	l.CreatedAt = time.Now().UTC().String()
-	l.UpdatedAt = time.Now().UTC().String()
 }
 
 func (l *Link) Response() LinkResponse {
@@ -87,13 +77,30 @@ func (l *LinksRepo) Add(link Link) {
 	l.Links = append(l.Links, link)
 }
 
+const (
+	Host     = "localhost"
+	Port     = 5432
+	UserDB   = "postgres"
+	Password = "1234"
+	Database = "bitlygo"
+)
+
 var (
 	FakeUserDB UsersRepo
 	FakeLinkDB LinksRepo
+	db         *pgxpool.Pool
 )
 
 func main() {
 	port := ":8000"
+
+	databaseUri := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", UserDB, Password, Host, Port, Database)
+	poolConfig, err := pgxpool.ParseConfig(databaseUri)
+	CheckError(err)
+
+	db, err = pgxpool.ConnectConfig(context.Background(), poolConfig)
+	CheckError(err)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.StripSlashes)
@@ -108,7 +115,7 @@ func main() {
 
 	fmt.Printf("Server is running on %v...\n", port)
 
-	err := http.ListenAndServe(port, r)
+	err = http.ListenAndServe(port, r)
 	CheckError(err)
 }
 
@@ -118,11 +125,22 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 
 func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 	var user User
+	var key string
 	err := json.NewDecoder(req.Body).Decode(&user)
 	CheckError(err)
-	user.Create()
-	FakeUserDB.Add(user)
-	json.NewEncoder(w).Encode(user.Response())
+	// save user into the database
+	err = db.QueryRow(context.Background(), `insert into users(username, password) values ($1, $2) returning id`, user.Username, user.Password).Scan(&user.Id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "internal server error",
+		})
+	}
+
+	err = db.QueryRow(context.Background(), `insert into api_keys(user_id, key) values ($1, $2) returning key`, user.Id, uuid.New()).Scan(&key)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user.Response(key))
 }
 
 func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
@@ -145,7 +163,6 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 		})
 		return
 	}
-	link.Create()
 	FakeLinkDB.Add(link)
 	json.NewEncoder(w).Encode(link.Response())
 }
@@ -172,6 +189,14 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		"status": true,
 		"items":  links[:limit],
 	})
+}
+
+func SelectUserByApiKey(apiKey string) {
+	var id uint
+	// 	var userFromDB UserModel
+	err := db.QueryRow(context.Background(), `select id from api_keys where key = $1`, apiKey).Scan(&id)
+	CheckError(err)
+	fmt.Println(id)
 }
 
 func HeaderMiddleware(next http.Handler) http.Handler {
