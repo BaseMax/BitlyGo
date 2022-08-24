@@ -151,11 +151,8 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
-	limitParam, ok := req.URL.Query()["limit"]
-	if !ok || len(limitParam) < 1 {
-		limitParam = append(limitParam, "10")
-	}
-	limit, err := strconv.Atoi(limitParam[0])
+	limitParam := req.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(limitParam)
 	CheckError(err)
 	if limit < 1 || limit > 100 {
 		json.NewEncoder(w).Encode(map[string]any{
