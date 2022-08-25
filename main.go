@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -74,8 +75,13 @@ const (
 )
 
 var (
-	db *pgxpool.Pool
+	db          *pgxpool.Pool
+	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func main() {
 	port := ":8000"
@@ -158,6 +164,10 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 			"message": "Invalid URL",
 		})
 		return
+	}
+	if link.Name == "" {
+		// generate random key
+		link.Name = RandStringRunes(6)
 	}
 	user := GetUserByApiKey(apiKey)
 	_, err = db.Exec(context.Background(), `insert into links(owner_id, name, link) values($1, $2, $3)`, user.Id, link.Name, link.Url)
@@ -292,6 +302,14 @@ func HeaderMiddleware(next http.Handler) http.Handler {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, req)
 	})
+}
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
 
 func CheckError(err error) {
