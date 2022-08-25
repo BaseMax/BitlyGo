@@ -27,14 +27,15 @@ type User struct {
 }
 
 type Link struct {
-	Id        uint       `json:"id" db:"id"`
-	OwnerId   *uint      `json:"owner_id" db:"owner_id"`
-	Name      string     `json:"name" db:"name"`
-	Url       string     `json:"url" db:"url"`
-	Visits    uint       `json:"visits" db:"visits"`
-	CreatedAt time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
+	Id            uint       `json:"id" db:"id"`
+	OwnerId       *uint      `json:"owner_id" db:"owner_id"`
+	Name          string     `json:"name" db:"name"`
+	Url           string     `json:"url" db:"url"`
+	Visits        uint       `json:"visits" db:"visits"`
+	StatisticsKey string     `json:"statistics_key" db:"statistics_key"`
+	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
+	DeletedAt     *time.Time `json:"deleted_at" db:"deleted_at"`
 }
 
 type UserResponse struct {
@@ -72,9 +73,7 @@ const (
 )
 
 var (
-	FakeUserDB UsersRepo
-	FakeLinkDB LinksRepo
-	db         *pgxpool.Pool
+	db *pgxpool.Pool
 )
 
 func main() {
