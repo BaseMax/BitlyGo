@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -96,6 +97,7 @@ func main() {
 	r.Post("/users", UserRegisterHandler)
 	r.Get("/links", ShowLinksHandler)
 	r.Post("/links/add", AddLinkHandler)
+	r.Get("/links/search", SearchLinkHandler)
 	r.Get("/links/top", TopLinksHandler)
 
 	fmt.Printf("Server is running on %v...\n", port)
@@ -214,6 +216,56 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		"status": true,
 		"items":  links,
 	})
+}
+
+func SearchLinkHandler(w http.ResponseWriter, req *http.Request) {
+	apiKey := req.Header.Get("API-KEY")
+	if apiKey == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "API key is required",
+		})
+		return
+	}
+
+	searchQuery := strings.Trim(req.URL.Query().Get("q"), "\\r\\n")
+	limitParam := req.URL.Query().Get("limit")
+	if searchQuery == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "query parameter is required",
+		})
+		return
+	}
+	if limitParam == "" {
+		limitParam = "10"
+	}
+	limit, err := strconv.Atoi(limitParam)
+	CheckError(err)
+
+	result := make(map[string]any)
+	result["items"] = make(map[string]string)
+	user := GetUserByApiKey(apiKey)
+	dbQuery := fmt.Sprintf("select name, link from links where owner_id = $1 and name like '%%%v%%' limit $2", searchQuery)
+	rows, _ := db.Query(context.Background(), dbQuery, user.Id, limit)
+	for rows.Next() {
+		var name string
+		var link string
+		err := rows.Scan(&name, &link)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]any{
+				"status":  false,
+				"message": "something went wrong please try again",
+			})
+			return
+		}
+		result["items"].(map[string]string)[name] = link
+	}
+	result["status"] = true
+	json.NewEncoder(w).Encode(result)
 }
 
 func GetUserByApiKey(apiKey string) *User {
