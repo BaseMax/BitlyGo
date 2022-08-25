@@ -176,12 +176,16 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
-func SelectUserByApiKey(apiKey string) {
+func GetUserByApiKey(apiKey string) *User {
 	var id uint
+	user := &User{}
 	// 	var userFromDB UserModel
-	err := db.QueryRow(context.Background(), `select id from api_keys where key = $1`, apiKey).Scan(&id)
-	CheckError(err)
-	fmt.Println(id)
+	err := db.QueryRow(context.Background(), `select user_id from api_keys where key = $1`, apiKey).Scan(&id)
+	err = db.QueryRow(context.Background(), `select * from users where id = $1`, id).Scan(&user.Id, &user.Username, &user.Password, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt)
+	if err != nil {
+		return nil
+	}
+	return user
 }
 
 func HeaderMiddleware(next http.Handler) http.Handler {
