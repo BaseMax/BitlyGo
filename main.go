@@ -137,18 +137,39 @@ func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
+	apiKey := req.Header.Get("API-KEY")
+	if apiKey == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "api key is required",
+		})
+	}
 	var link Link
 	err := json.NewDecoder(req.Body).Decode(&link)
 	CheckError(err)
 	_, err = url.ParseRequestURI(link.Url)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]any{
 			"status":  false,
 			"message": "Invalid URL",
 		})
 		return
 	}
+	user := GetUserByApiKey(apiKey)
+	_, err = db.Exec(context.Background(), `insert into links(owner_id, name, link) values($1, $2, $3)`, user.Id, link.Name, link.Url)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "something went wrong please try again",
+		})
+		return
+	}
+	link.OwnerId = &user.Id
 	json.NewEncoder(w).Encode(link.Response())
+
 }
 
 func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
