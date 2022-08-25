@@ -129,7 +129,7 @@ Otherwise, we should alert that is a 404 (HTTP Status) route and display a 404 w
 
 ### `UPDATE /:name`
 
-- STRING `new_name` (required)
+- STRING `new_name` (optional)
 
 - STRING `link` (required, and we will check the link should be valid and pass URL standard format)
 About link value: we must support **UTF-8** characters or query values.
