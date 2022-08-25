@@ -34,6 +34,7 @@ type Link struct {
 	StatisticsKey string     `json:"statistics_key" db:"statistics_key"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
+	ExpiredAt     *time.Time `json:"expired_at" db:"expired_at"`
 	DeletedAt     *time.Time `json:"deleted_at" db:"deleted_at"`
 }
 
@@ -151,7 +152,11 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
+	apiKey := req.Header.Get("API-KEY")
 	limitParam := req.URL.Query().Get("limit")
+	if limitParam == "" {
+		limitParam = "10"
+	}
 	limit, err := strconv.Atoi(limitParam)
 	CheckError(err)
 	if limit < 1 || limit > 100 {
@@ -161,13 +166,32 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		})
 		return
 	}
-	links := []string{}
-	if limit > len(links) {
-		limit = len(links)
+	if apiKey == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "missing api key",
+		})
+		return
+	}
+	user := GetUserByApiKey(apiKey)
+	links := []LinkResponse{}
+	rows, _ := db.Query(context.Background(), `select * from links where owner_id = $1 order by 'visits' desc limit $2`, user.Id, limit)
+	for rows.Next() {
+		link := &Link{}
+		err := rows.Scan(&link.Id, &link.OwnerId, &link.Name, &link.Url, &link.Visits, &link.StatisticsKey, &link.CreatedAt, &link.UpdatedAt, &link.ExpiredAt, &link.DeletedAt)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]any{
+				"status":  false,
+				"message": "something went wrong please try again",
+			})
+		}
+		links = append(links, link.Response())
 	}
 	json.NewEncoder(w).Encode(map[string]any{
 		"status": true,
-		"items":  links[:limit],
+		"items":  links,
 	})
 }
 
