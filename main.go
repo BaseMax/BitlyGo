@@ -181,7 +181,14 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		limitParam = "10"
 	}
 	limit, err := strconv.Atoi(limitParam)
-	CheckError(err)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "invalid value for limit parameter",
+		})
+		return
+	}
 	if limit < 1 || limit > 100 {
 		json.NewEncoder(w).Encode(map[string]any{
 			"status":  false,
