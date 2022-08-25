@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -17,22 +18,23 @@ import (
 )
 
 type User struct {
-	Id        uint   `json:"id" db:"id"`
-	Username  string `json:"username" db:"username"`
-	Password  string `json:"password" db:"password"`
-	CreatedAt int64  `json:"created_at" db:"created_at"`
-	UpdatedAt int64  `json:"updated_at" db:"updated_at"`
-	DeletedAt int64  `json:"deleted_at" db:"deleted_at"`
+	Id        uint       `json:"id" db:"id"`
+	Username  string     `json:"username" db:"username"`
+	Password  string     `json:"password" db:"password"`
+	CreatedAt time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
 }
 
 type Link struct {
-	Id        uint   `json:"id" db:"id"`
-	Name      string `json:"name" db:"name"`
-	Url       string `json:"url" db:"url"`
-	Visits    uint   `json:"visits" db:"visits"`
-	CreatedAt int64  `json:"created_at" db:"created_at"`
-	UpdatedAt int64  `json:"updated_at" db:"updated_at"`
-	DeletedAt int64  `json:"deleted_at" db:"deleted_at"`
+	Id        uint       `json:"id" db:"id"`
+	OwnerId   *uint      `json:"owner_id" db:"owner_id"`
+	Name      string     `json:"name" db:"name"`
+	Url       string     `json:"url" db:"url"`
+	Visits    uint       `json:"visits" db:"visits"`
+	CreatedAt time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
 }
 
 type UserResponse struct {
