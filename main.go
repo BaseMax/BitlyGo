@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sort"
 	"strconv"
 	"time"
 
@@ -131,7 +130,7 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
 	res := map[string]any{
 		"status": true,
-		"items":  FakeLinkDB.Links,
+		"items":  nil,
 	}
 	json.NewEncoder(w).Encode(res)
 }
@@ -148,7 +147,6 @@ func AddLinkHandler(w http.ResponseWriter, req *http.Request) {
 		})
 		return
 	}
-	FakeLinkDB.Add(link)
 	json.NewEncoder(w).Encode(link.Response())
 }
 
@@ -163,13 +161,10 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		})
 		return
 	}
-	links := FakeLinkDB.Links
+	links := []string{}
 	if limit > len(links) {
 		limit = len(links)
 	}
-	sort.Slice(links, func(i, j int) bool {
-		return links[i].Visits > links[j].Visits
-	})
 	json.NewEncoder(w).Encode(map[string]any{
 		"status": true,
 		"items":  links[:limit],
