@@ -111,6 +111,7 @@ func main() {
 	r.Get("/links/search", SearchLinkHandler)
 	r.Get("/links/top", TopLinksHandler)
 	r.Put("/links/{name}", UpdateLinkHandler)
+	r.Get("/{name}", RedirectHandler)
 
 	fmt.Printf("Server is running on %v...\n", port)
 
@@ -140,6 +141,16 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 	err = db.QueryRow(context.Background(), `insert into api_keys(user_id, key) values ($1, $2) returning key`, user.Id, uuid.New()).Scan(&key)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user.Response(key))
+}
+
+func RedirectHandler(w http.ResponseWriter, req *http.Request) {
+	urlName := chi.URLParam(req, "name")
+	var url string
+	err := db.QueryRow(context.Background(), `select link from links where name = $1`, urlName).Scan(&url)
+	CheckError(err)
+	_, err = db.Exec(context.Background(), `update links set visits = coalesce(visits, 0) + 1 where name = $1`, urlName)
+	CheckError(err)
+	http.Redirect(w, req, url, http.StatusSeeOther)
 }
 
 func ShowLinksHandler(w http.ResponseWriter, req *http.Request) {
