@@ -48,14 +48,6 @@ type LinkResponse struct {
 	Visits uint   `json:"visits"`
 }
 
-type UsersRepo struct {
-	Users []User
-}
-
-type LinksRepo struct {
-	Links []Link
-}
-
 func (u *User) Response(apiKey string) UserResponse {
 	return UserResponse{
 		Username: u.Username,
@@ -69,14 +61,6 @@ func (l *Link) Response() LinkResponse {
 		Url:    l.Url,
 		Visits: l.Visits,
 	}
-}
-
-func (u *UsersRepo) Add(user User) {
-	u.Users = append(u.Users, user)
-}
-
-func (l *LinksRepo) Add(link Link) {
-	l.Links = append(l.Links, link)
 }
 
 const (
