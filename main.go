@@ -51,6 +51,11 @@ type LinkResponse struct {
 	Visits uint   `json:"visits"`
 }
 
+type LinkUpdate struct {
+	NewName string `json:"new_name"`
+	Url     string `json:"url"`
+}
+
 func (u *User) Response(apiKey string) UserResponse {
 	return UserResponse{
 		Username: u.Username,
@@ -105,6 +110,7 @@ func main() {
 	r.Post("/links/add", AddLinkHandler)
 	r.Get("/links/search", SearchLinkHandler)
 	r.Get("/links/top", TopLinksHandler)
+	r.Put("/links/{name}", UpdateLinkHandler)
 
 	fmt.Printf("Server is running on %v...\n", port)
 
@@ -283,6 +289,63 @@ func SearchLinkHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	result["status"] = true
 	json.NewEncoder(w).Encode(result)
+}
+
+func UpdateLinkHandler(w http.ResponseWriter, req *http.Request) {
+	apiKey := req.Header.Get("API-KEY")
+	if apiKey == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "api key is required",
+		})
+		return
+	}
+	user := GetUserByApiKey(apiKey)
+	if user == nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "user does not exist",
+		})
+		return
+	}
+	var isExist bool
+	urlName := chi.URLParam(req, "name")
+	err := db.QueryRow(context.Background(), `select exists(select id from links where name = $1 and owner_id = $2)`, urlName, user.Id).Scan(&isExist)
+	CheckError(err)
+	if !isExist {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": fmt.Sprintf("link with name %v does not exist", urlName),
+		})
+		return
+	}
+	var link LinkUpdate
+	json.NewDecoder(req.Body).Decode(&link)
+	if link.Url == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]any{
+			"status":  false,
+			"message": "link is required field",
+		})
+		return
+	}
+
+	dbQuery := "update links set link=$1"
+	if link.NewName != "" {
+		dbQuery += ", name=$2 where owner_id = $3 and name = $4"
+		_, err := db.Exec(context.Background(), dbQuery, link.Url, link.NewName, user.Id, urlName)
+		CheckError(err)
+	} else {
+		dbQuery += " where owner_id = $2 and name = $3"
+		_, err := db.Exec(context.Background(), dbQuery, link.Url, user.Id, urlName)
+		CheckError(err)
+	}
+
+	json.NewEncoder(w).Encode(map[string]bool{"status": true})
+
 }
 
 func GetUserByApiKey(apiKey string) *User {
