@@ -31,7 +31,7 @@ type Link struct {
 	Name          string     `json:"name" db:"name"`
 	Url           string     `json:"url" db:"url"`
 	Visits        uint       `json:"visits" db:"visits"`
-	StatisticsKey string     `json:"statistics_key" db:"statistics_key"`
+	StatisticsKey *string    `json:"statistics_key" db:"statistics_key"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
 	ExpiredAt     *time.Time `json:"expired_at" db:"expired_at"`
@@ -197,10 +197,10 @@ func TopLinksHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	user := GetUserByApiKey(apiKey)
 	links := []LinkResponse{}
-	rows, _ := db.Query(context.Background(), `select * from links where owner_id = $1 order by 'visits' desc limit $2`, user.Id, limit)
+	rows, _ := db.Query(context.Background(), `select * from links where owner_id = $1 order by visits desc limit $2`, user.Id, limit)
 	for rows.Next() {
 		link := &Link{}
-		err := rows.Scan(&link.Id, &link.OwnerId, &link.Name, &link.Url, &link.Visits, &link.StatisticsKey, &link.CreatedAt, &link.UpdatedAt, &link.ExpiredAt, &link.DeletedAt)
+		err := rows.Scan(&link.Id, &link.OwnerId, &link.Name, &link.Url, &link.Visits, &link.CreatedAt, &link.UpdatedAt, &link.DeletedAt, &link.ExpiredAt, &link.StatisticsKey)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]any{
