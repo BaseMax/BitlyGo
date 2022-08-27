@@ -7,11 +7,16 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/itsjoniur/bitlygo/internal/durable"
+	"github.com/itsjoniur/bitlygo/internal/middlewares"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func StartAPI(logger *log.Logger, port string) error {
+func StartAPI(logger *log.Logger, db *pgxpool.Pool, port string) error {
 	router := chi.NewRouter()
+	database := durable.WrapDatabase(db)
 	// setup middlewares
+	router.Use(middlewares.ContextMiddleware(database))
 	router.Use(middleware.Logger)
 	router.Use(middleware.StripSlashes)
 	router.Use(middleware.Recoverer)
