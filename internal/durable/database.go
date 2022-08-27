@@ -49,13 +49,13 @@ func (d *Database) Close() {
 }
 
 func (d *Database) Exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
-	return d.db.Exec(ctx, query, args)
+	return d.db.Exec(ctx, query, args...)
 }
 
 func (d *Database) Query(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error) {
-	return d.db.Query(ctx, query, args)
+	return d.db.Query(ctx, query, args...)
 }
 
 func (d *Database) QueryRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
-	return d.db.QueryRow(ctx, query, args)
+	return d.db.QueryRow(ctx, query, args...)
 }
