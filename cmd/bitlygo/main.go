@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 	"path"
 	"path/filepath"
 	"runtime"
 
+	"github.com/itsjoniur/bitlygo/api"
 	"github.com/itsjoniur/bitlygo/internal/configs"
 )
 
@@ -31,8 +30,7 @@ func main() {
 	// arguments: connection info
 	// create logger
 	// serve HTTP
-	err := http.ListenAndServe(fmt.Sprintf(":%s", configs.HTTP.Port), nil)
-	if err != nil {
+	if err := api.StartAPI(nil, configs.HTTP.Port); err != nil {
 		log.Panicln(err)
 	}
 }
