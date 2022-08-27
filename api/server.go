@@ -30,6 +30,7 @@ func StartAPI(logger *log.Logger, db *pgxpool.Pool, port string) error {
 	router.Get("/search", searchLinkHandler)
 	router.Get("/top", showTopLinksHandler)
 
+	log.Printf("Server running on %v port...", port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), router); err != nil {
 		return err
 	}
