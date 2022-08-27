@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"path"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/itsjoniur/bitlygo/api"
 	"github.com/itsjoniur/bitlygo/internal/configs"
+	"github.com/itsjoniur/bitlygo/internal/durable"
 )
 
 var (
@@ -25,12 +27,18 @@ func main() {
 	}
 
 	configs := configs.AppConfig
-	// arguments: file, environment
 	// create a database client
+	db := durable.OpenDatabaseClient(context.Background(), &durable.ConnectionInfo{
+		User:     configs.Database.User,
+		Password: configs.Database.Password,
+		Host:     configs.Database.Host,
+		Port:     configs.Database.Port,
+		Name:     configs.Database.Name,
+	})
 	// arguments: connection info
 	// create logger
 	// serve HTTP
-	if err := api.StartAPI(nil, configs.HTTP.Port); err != nil {
+	if err := api.StartAPI(nil, db, configs.HTTP.Port); err != nil {
 		log.Panicln(err)
 	}
 }
