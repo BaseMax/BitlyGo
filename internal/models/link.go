@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
@@ -35,7 +34,6 @@ func CreateLink(ctx context.Context, owner int, name, link string) (*Link, error
 		UpdatedAt: now,
 	}
 
-	fmt.Println(newLink)
 	query := "INSERT INTO links(owner_id, name, link, created_at, updated_at) VALUES($1, $2, $3, $4, $5)"
 	values := []interface{}{newLink.OwnerId, newLink.Name, newLink.Link, newLink.CreatedAt, newLink.UpdatedAt}
 	_, err := db.Exec(context.Background(), query, values...)
