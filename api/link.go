@@ -419,3 +419,18 @@ func redirectHandler(w http.ResponseWriter, req *http.Request) {
 
 	http.Redirect(w, req, link.Link, http.StatusPermanentRedirect)
 }
+
+func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
+	links, err := models.GetExpireSoonLinks(req.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	json.NewEncoder(w).Encode(links)
+}
