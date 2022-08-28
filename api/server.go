@@ -6,17 +6,19 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/unrolled/render"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/go-chi/chi/v5/middleware"
+
 	"github.com/itsjoniur/bitlygo/internal/durable"
 	"github.com/itsjoniur/bitlygo/internal/middlewares"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/unrolled/render"
 )
 
 func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router := chi.NewRouter()
 	database := durable.WrapDatabase(db)
-	// setup middlewares
+
+	// Setup middlewares
 	router.Use(middlewares.Logger(logger)) //fs logger
 	router.Use(middlewares.Header)
 	router.Use(middlewares.ContextMiddleware(database))
@@ -24,7 +26,8 @@ func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router.Use(middleware.Logger) // http requests logger
 	router.Use(middleware.StripSlashes)
 	router.Use(middleware.Recoverer)
-	// register routes
+	
+	// Register routes
 	router.Get("/", rootHandler)
 	router.Post("/add", addLinkHandler)
 	router.Post("/{name}", addLinkByPathHandler)
@@ -35,6 +38,7 @@ func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router.Get("/top", showTopLinksHandler)
 	router.Get("/expire-soon", showExpireSoonLinksHandler)
 
+	// Serve HTTP
 	log.Printf("Server running on %v port...", port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), router); err != nil {
 		return err
