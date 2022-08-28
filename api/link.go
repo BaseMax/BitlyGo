@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/itsjoniur/bitlygo/internal/models"
+	"github.com/itsjoniur/bitlygo/pkg/strutil"
 )
 
 func addLinkHandler(w http.ResponseWriter, req *http.Request) {
@@ -15,9 +16,21 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		Name string `json:"name"`
 		Link string `json:"link"`
 	}
+	var err error
 
 	params := Params{}
 	json.NewDecoder(req.Body).Decode(&params)
+
+	params.Name, err = strutil.RemoveNonAlphanumerical(params.Name)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
 
 	if params.Name == "" {
 		// Generate random string
