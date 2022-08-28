@@ -7,10 +7,11 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/itsjoniur/bitlygo/api"
 	"github.com/itsjoniur/bitlygo/internal/configs"
 	"github.com/itsjoniur/bitlygo/internal/durable"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 )
 
 func main() {
-	// initialize configuration
+	// Initialize configuration
 	_, b, _, _ := runtime.Caller(0)
 	dir := filepath.Dir(path.Join(path.Dir(b)))
 
@@ -28,7 +29,8 @@ func main() {
 	}
 
 	configs := configs.AppConfig
-	// create a database client
+
+	// Create a database client
 	db := durable.OpenDatabaseClient(context.Background(), &durable.ConnectionInfo{
 		User:     configs.Database.User,
 		Password: configs.Database.Password,
@@ -36,9 +38,11 @@ func main() {
 		Port:     configs.Database.Port,
 		Name:     configs.Database.Name,
 	})
-	// create logger
+
+	// Create logger
 	logger := durable.NewLogger(logrus.New())
-	// serve HTTP
+
+	// Serve HTTP
 	if err := api.StartAPI(logger, db, configs.HTTP.Port); err != nil {
 		log.Panicln(err)
 	}
