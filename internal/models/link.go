@@ -44,6 +44,29 @@ func CreateLink(ctx context.Context, owner int, name, link string) (*Link, error
 	return newLink, nil
 }
 
+func CreateLinkWithExpireTime(ctx context.Context, owner int, name, link string) (*Link, error) {
+	db := ctx.Value(10).(*durable.Database)
+	now := time.Now()
+	exp := time.Now().Add(ExpireTime)
+	newLink := &Link{
+		OwnerId:   owner,
+		Name:      name,
+		Link:      link,
+		CreatedAt: now,
+		UpdatedAt: now,
+		ExpiredAt: &exp,
+	}
+
+	query := "INSERT INTO links(owner_id, name, link, created_at, updated_at, expired_at) VALUES($1, $2, $3, $4, $5, $6)"
+	values := []interface{}{newLink.OwnerId, newLink.Name, newLink.Link, newLink.CreatedAt, newLink.UpdatedAt, newLink.ExpiredAt}
+	_, err := db.Exec(context.Background(), query, values...)
+	if err != nil {
+		return nil, err
+	}
+	return newLink, nil
+
+}
+
 func GetLinkByName(ctx context.Context, name string) *Link {
 	db := ctx.Value(10).(*durable.Database)
 	link := &Link{}
