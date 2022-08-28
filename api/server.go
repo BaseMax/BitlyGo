@@ -16,6 +16,7 @@ func StartAPI(logger *log.Logger, db *pgxpool.Pool, port string) error {
 	router := chi.NewRouter()
 	database := durable.WrapDatabase(db)
 	// setup middlewares
+	router.Use(middlewares.Header)
 	router.Use(middlewares.ContextMiddleware(database))
 	router.Use(middleware.Logger)
 	router.Use(middleware.StripSlashes)
