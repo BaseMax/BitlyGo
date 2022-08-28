@@ -1,6 +1,6 @@
 # Bitly Go
 
-URL Shortener - Short URLs & Custom Free Link Powered by Goland and ... database
+URL Shortener - Short URLs & Custom Free Link Powered by GoLang and PostgreSQL database.
 
 ## Routes
 
