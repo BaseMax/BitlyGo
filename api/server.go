@@ -12,13 +12,14 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func StartAPI(logger *log.Logger, db *pgxpool.Pool, port string) error {
+func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router := chi.NewRouter()
 	database := durable.WrapDatabase(db)
 	// setup middlewares
+	router.Use(middlewares.Logger(logger)) //fs logger
 	router.Use(middlewares.Header)
 	router.Use(middlewares.ContextMiddleware(database))
-	router.Use(middleware.Logger)
+	router.Use(middleware.Logger) // http requests logger
 	router.Use(middleware.StripSlashes)
 	router.Use(middleware.Recoverer)
 	// register routes
