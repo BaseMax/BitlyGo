@@ -42,3 +42,13 @@ func CreateLink(ctx context.Context, owner int, name, link string) (*Link, error
 	}
 	return newLink, nil
 }
+
+func GetLinkByName(ctx context.Context, name string) *Link {
+	db := ctx.Value(10).(*durable.Database)
+	link := &Link{}
+
+	query := "SELECT name, link FROM links WHERE name = $1"
+	db.QueryRow(context.Background(), query, name).Scan(&link.Name, &link.Link)
+
+	return link
+}
