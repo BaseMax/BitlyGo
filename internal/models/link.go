@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
@@ -51,4 +52,34 @@ func GetLinkByName(ctx context.Context, name string) *Link {
 	db.QueryRow(context.Background(), query, name).Scan(&link.Name, &link.Link)
 
 	return link
+}
+
+func SearchLinkByName(ctx context.Context, name string) ([]*Link, error) {
+	db := ctx.Value(10).(*durable.Database)
+	links := []*Link{}
+
+	query := fmt.Sprintf("SELECT name, link FROM links WHERE name LIKE %%%v%%", name)
+	rows, err := db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		link := &Link{}
+
+		err := rows.Scan(&link.Name, &link.Link)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return links, nil
+
 }
