@@ -63,10 +63,8 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if apiKey != "" {
-		fmt.Println("here 1")
 		link, err = models.CreateLink(req.Context(), 0, params.Name, params.Link)
 	} else {
-		fmt.Println("here 2")
 		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
 	}
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
