@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
+	"github.com/unrolled/render"
 )
 
 type ErrorResponse struct {
@@ -15,38 +16,59 @@ type ErrorResponse struct {
 }
 
 func BadRequestError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
 	description := "The request body can not be parsed as valid data"
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
 }
 
 func NotFoundError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
 	description := http.StatusText(http.StatusNotFound)
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusNotFound, resp)
 }
 
 func InternalServerError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
 	description := http.StatusText(http.StatusInternalServerError)
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusInternalServerError, resp)
 }
 
 func InvalidLinkError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
 	description := "link value must be a valid url"
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
 }
 
 func LinkIsExistsError(ctx context.Context, w http.ResponseWriter, name string) {
+	r := ctx.Value(2).(*render.Render)
 	description := fmt.Sprintf("link with name %s exists", name)
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusConflict, resp)
 }
 
 func FieldEmptyError(ctx context.Context, w http.ResponseWriter, field string) {
+	r := ctx.Value(2).(*render.Render)
 	description := fmt.Sprintf("field %s can not be empty", field)
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
 }
 
 func LimitRangeError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
 	description := "limit value must be between 1-100"
-	createErr(ctx, description)
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
 }
 
 func createErr(ctx context.Context, description string) *ErrorResponse {
