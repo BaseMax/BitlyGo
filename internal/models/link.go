@@ -189,7 +189,7 @@ func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
 		WHERE
 		(EXTRACT(EPOCH FROM expired_at)/3600 - EXTRACT(EPOCH FROM NOW())/3600) <= $1
 	`
-	rows, err := db.Query(context.Background(), query, ExpireTime/3)
+	rows, err := db.Query(context.Background(), query, (ExpireTime / 3).Hours())
 	if err != nil {
 		return nil, err
 	}
