@@ -75,6 +75,10 @@ func GetLinkByName(ctx context.Context, name string) *Link {
 	query := "SELECT name, link FROM links WHERE name = $1"
 	db.QueryRow(context.Background(), query, name).Scan(&link.Name, &link.Link)
 
+	if link.Name == "" && link.Link == "" {
+		return nil
+	}
+
 	return link
 }
 
@@ -143,13 +147,16 @@ func UpdateLinkByName(ctx context.Context, name, newName, newLink string) (*Link
 		Link: newLink,
 	}
 
-	query := "UPDATE links SET name = COALESCE($1, name), link = $2 WHERE name = $3"
+	query := "UPDATE links SET name = COALESCE(NULLIF($1, ''), name), link = $2 WHERE name = $3"
 	values := []interface{}{link.Name, link.Link, name}
 	_, err := db.Exec(context.Background(), query, values...)
 	if err != nil {
 		return nil, err
 	}
 
+	if link.Name == "" {
+		link.Name = name
+	}
 	return link, nil
 }
 
