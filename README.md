@@ -175,5 +175,5 @@ Note: since this project supports short lifetime links, we can use other databas
 
 ## Authors
 
-- Ahmad ...
+- Its Joniur
 - Max Base
