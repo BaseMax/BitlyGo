@@ -111,3 +111,20 @@ func TopLinksByVisits(ctx context.Context, limit int) ([]*Link, error) {
 
 	return links, nil
 }
+
+func UpdateLinkByName(ctx context.Context, name, newName, newLink string) (*Link, error) {
+	db := ctx.Value(10).(*durable.Database)
+	link := &Link{
+		Name: newName,
+		Link: newLink,
+	}
+
+	query := "UPDATE links SET name = COALESCE($1, name), link = $2 WHERE name = $3"
+	values := []interface{}{link.Name, link.Link, name}
+	_, err := db.Exec(context.Background(), query, values...)
+	if err != nil {
+		return nil, err
+	}
+
+	return link, nil
+}
