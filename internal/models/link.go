@@ -58,7 +58,7 @@ func SearchLinkByName(ctx context.Context, name string, limit int) ([]*Link, err
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
 
-	query := fmt.Sprintf("SELECT name, link FROM links WHERE name LIKE %%%v%% LIMIT $1", name)
+	query := fmt.Sprintf("SELECT name, link FROM links WHERE name LIKE '%%%v%%' LIMIT $1", name)
 	rows, err := db.Query(context.Background(), query, limit)
 	if err != nil {
 		return nil, err
