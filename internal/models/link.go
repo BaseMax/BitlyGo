@@ -128,3 +128,12 @@ func UpdateLinkByName(ctx context.Context, name, newName, newLink string) (*Link
 
 	return link, nil
 }
+
+func DeleteLinkByName(ctx context.Context, name string) error {
+	db := ctx.Value(10).(*durable.Database)
+
+	query := "DELETE FROM links WHERE name = $1"
+	_, err := db.Exec(context.Background(), query, name)
+
+	return err
+}
