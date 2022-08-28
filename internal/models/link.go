@@ -83,3 +83,31 @@ func SearchLinkByName(ctx context.Context, name string) ([]*Link, error) {
 	return links, nil
 
 }
+
+func TopLinksByVisits(ctx context.Context, limit int) ([]*Link, error) {
+	db := ctx.Value(10).(*durable.Database)
+	links := []*Link{}
+
+	query := "SELECT name, link, visits FROM links ORDER BY visits DESC LIMIT $1"
+	rows, err := db.Query(context.Background(), query, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		link := &Link{}
+
+		err := rows.Scan(&link.Name, &link.Link, &link.Visits)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return links, nil
+}
