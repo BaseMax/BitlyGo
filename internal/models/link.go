@@ -178,3 +178,36 @@ func AddViewToLinkByName(ctx context.Context, name string) {
 		log.Println(err)
 	}
 }
+
+func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
+	db := ctx.Value(10).(*durable.Database)
+	links := []*Link{}
+
+	query := `
+		SELECT name, link
+		FROM links
+		WHERE
+		(EXTRACT(EPOCH FROM expired_at)/3600 - EXTRACT(EPOCH FROM NOW())/3600) <= $1
+	`
+	rows, err := db.Query(context.Background(), query, ExpireTime/3)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		link := &Link{}
+
+		err := rows.Scan(&link.Name, &link.Link)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return links, nil
+}
