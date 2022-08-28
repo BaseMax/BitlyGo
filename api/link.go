@@ -219,7 +219,42 @@ func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("delete link"))
+	var err error
+	name := chi.URLParam(req, "name")
+
+	name, err = strutil.RemoveNonAlphanumerical(name)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	err = models.DeleteLinkByName(req.Context(), name)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]bool{"status": true})
 }
 
 func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
