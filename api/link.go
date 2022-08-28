@@ -19,6 +19,8 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		Link string `json:"link"`
 	}
 	var err error
+	link := &models.Link{}
+	apiKey := req.Header.Get("API-KEY")
 
 	params := Params{}
 	json.NewDecoder(req.Body).Decode(&params)
@@ -60,7 +62,13 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	link, err := models.CreateLink(req.Context(), 0, params.Name, params.Link)
+	if apiKey != "" {
+		fmt.Println("here 1")
+		link, err = models.CreateLink(req.Context(), 0, params.Name, params.Link)
+	} else {
+		fmt.Println("here 2")
+		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
+	}
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
 		w.WriteHeader(http.StatusBadRequest)
 		resp := map[string]any{
@@ -90,7 +98,9 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 		Link string `json:"link"`
 	}
 	var err error
+	link := &models.Link{}
 	params := Params{}
+	apiKey := req.Header.Get("API-KEY")
 
 	json.NewDecoder(req.Body).Decode(&params)
 	if params.Link == "" {
@@ -129,7 +139,11 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	link, err := models.CreateLink(req.Context(), 0, params.Name, params.Link)
+	if apiKey != "" {
+		link, err = models.CreateLink(req.Context(), 0, params.Name, params.Link)
+	} else {
+		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
+	}
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
 		w.WriteHeader(http.StatusBadRequest)
 		resp := map[string]any{
