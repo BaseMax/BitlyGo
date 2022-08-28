@@ -54,12 +54,12 @@ func GetLinkByName(ctx context.Context, name string) *Link {
 	return link
 }
 
-func SearchLinkByName(ctx context.Context, name string) ([]*Link, error) {
+func SearchLinkByName(ctx context.Context, name string, limit int) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
 
-	query := fmt.Sprintf("SELECT name, link FROM links WHERE name LIKE %%%v%%", name)
-	rows, err := db.Query(context.Background(), query)
+	query := fmt.Sprintf("SELECT name, link FROM links WHERE name LIKE %%%v%% LIMIT $1", name)
+	rows, err := db.Query(context.Background(), query, limit)
 	if err != nil {
 		return nil, err
 	}
