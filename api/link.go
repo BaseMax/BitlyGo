@@ -62,7 +62,7 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(link)
+	responses.RenderNewLinkResponse(req.Context(), w, link)
 }
 
 func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
@@ -112,7 +112,7 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(link)
+	responses.RenderNewLinkResponse(req.Context(), w, link)
 }
 
 func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
@@ -152,7 +152,7 @@ func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(link)
+	responses.RenderNewLinkResponse(req.Context(), w, link)
 }
 
 func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
@@ -216,7 +216,7 @@ func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(links)
+	responses.RenderSearchLinkResponse(req.Context(), w, links)
 
 }
 
@@ -244,7 +244,7 @@ func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(tl)
+	responses.RenderTopLinksResponse(req.Context(), w, tl)
 }
 
 func redirectHandler(w http.ResponseWriter, req *http.Request) {
@@ -280,5 +280,5 @@ func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(links)
+	responses.RenderExpireLinkResponse(req.Context(), w, links)
 }
