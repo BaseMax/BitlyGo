@@ -228,7 +228,45 @@ func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("top links"))
+	limit := req.URL.Query().Get("limit")
+
+	if limit == "" {
+		limit = "10"
+	}
+
+	l, err := strconv.Atoi(limit)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if 1 > l || 1 > 100 {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": "limit value must be between 1-100",
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	tl, err := models.TopLinksByVisits(req.Context(), l)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	json.NewEncoder(w).Encode(tl)
 }
 
 func redirectHandler(w http.ResponseWriter, req *http.Request) {
