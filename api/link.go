@@ -34,7 +34,7 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	if params.Name == "" {
 		// Generate random string
-		params.Name = "aaa" // This will be the default value until we implement a function to generate random string for us
+		params.Name = strutil.RandStringRunes(8)
 	}
 
 	if params.Link == "" {
