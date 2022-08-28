@@ -10,6 +10,7 @@ import (
 	"github.com/itsjoniur/bitlygo/internal/durable"
 	"github.com/itsjoniur/bitlygo/internal/middlewares"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/unrolled/render"
 )
 
 func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
@@ -19,6 +20,7 @@ func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router.Use(middlewares.Logger(logger)) //fs logger
 	router.Use(middlewares.Header)
 	router.Use(middlewares.ContextMiddleware(database))
+	router.Use(middlewares.Render(render.New()))
 	router.Use(middleware.Logger) // http requests logger
 	router.Use(middleware.StripSlashes)
 	router.Use(middleware.Recoverer)
