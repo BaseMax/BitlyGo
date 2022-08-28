@@ -154,7 +154,68 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("update link"))
+	type Params struct {
+		NewName string `json:"new_name"`
+		Link    string `json:"link"`
+	}
+	var err error
+	params := Params{}
+	name := chi.URLParam(req, "name")
+
+	name, err = strutil.RemoveNonAlphanumerical(name)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	isExist := models.GetLinkByName(req.Context(), name)
+	if isExist == nil {
+		w.WriteHeader(http.StatusNotFound)
+		resp := map[string]any{
+			"status":  false,
+			"message": fmt.Sprintf("link with name `%v` does not exist", name),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	json.NewDecoder(req.Body).Decode(&params)
+	if params.Link == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": "link can not be ampty",
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	link, err := models.UpdateLinkByName(req.Context(), name, params.NewName, params.Link)
+	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": fmt.Sprintf("link with name `%v` exists", params.NewName),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	json.NewEncoder(w).Encode(link)
 }
 
 func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
@@ -270,5 +331,42 @@ func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func redirectHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("redirect"))
+	var err error
+	name := chi.URLParam(req, "name")
+
+	name, err = strutil.RemoveNonAlphanumerical(name)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	link := models.GetLinkByName(req.Context(), name)
+	if link == nil {
+		w.WriteHeader(http.StatusNotFound)
+		resp := map[string]any{
+			"status":  false,
+			"message": fmt.Sprintf("link with name `%v` does not exist", name),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	go models.AddViewToLinkByName(req.Context(), name)
+
+	http.Redirect(w, req, link.Link, http.StatusPermanentRedirect)
 }
