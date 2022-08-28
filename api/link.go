@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -161,7 +162,69 @@ func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("search link"))
+	var err error
+	sq := req.URL.Query().Get("q")
+	limit := req.URL.Query().Get("limit")
+
+	sq, err = strutil.RemoveNonAlphanumerical(sq)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusBadRequest),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if len(sq) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": "search query can not be empty",
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if limit == "" {
+		limit = "10"
+	}
+
+	l, err := strconv.Atoi(limit)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if 1 > l || l > 100 {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := map[string]any{
+			"status":  false,
+			"message": "limit value must be between 1-100",
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	links, err := models.SearchLinkByName(req.Context(), sq, l)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := map[string]any{
+			"status":  false,
+			"message": http.StatusText(http.StatusInternalServerError),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	json.NewEncoder(w).Encode(links)
+
 }
 
 func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
