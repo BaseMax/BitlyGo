@@ -3,9 +3,10 @@ package responses
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"runtime"
+
+	"github.com/itsjoniur/bitlygo/internal/durable"
 )
 
 type ErrorResponse struct {
@@ -49,13 +50,13 @@ func LimitRangeError(ctx context.Context, w http.ResponseWriter) {
 }
 
 func createErr(ctx context.Context, description string) *ErrorResponse {
-	logger := ctx.Value(1).(*log.Logger)
+	logger := ctx.Value(1).(*durable.Logger)
 
 	pc, file, line, _ := runtime.Caller(2)
 	funcName := runtime.FuncForPC(pc).Name()
 	trace := fmt.Sprintf("[ERROR] %s -> %s:%d %s", description, file, line, funcName)
 
-	logger.Println(trace)
+	logger.Error(trace)
 
 	return &ErrorResponse{
 		Message: description,
