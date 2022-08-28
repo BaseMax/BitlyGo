@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
@@ -159,4 +160,14 @@ func DeleteLinkByName(ctx context.Context, name string) error {
 	_, err := db.Exec(context.Background(), query, name)
 
 	return err
+}
+
+func AddViewToLinkByName(ctx context.Context, name string) {
+	db := ctx.Value(10).(*durable.Database)
+
+	query := "UPDATE links SET visits = visits + 1 WHERE name = $1"
+	_, err := db.Exec(context.Background(), query, name)
+	if err != nil {
+		log.Println(err)
+	}
 }
