@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/itsjoniur/bitlygo/internal/models"
+	"github.com/itsjoniur/bitlygo/internal/responses"
 	"github.com/itsjoniur/bitlygo/pkg/strutil"
 )
 
@@ -27,12 +27,7 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	params.Name, err = strutil.RemoveNonAlphanumerical(params.Name)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
@@ -43,22 +38,12 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	if params.Link == "" {
 		// Link is a required field and when it's empty we should return an error
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "link can not be ampty",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	if _, err := url.ParseRequestURI(params.Link); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "link must be a vaild url",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InvalidLinkError(req.Context(), w)
 		return
 	}
 
@@ -68,22 +53,12 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
 	}
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": fmt.Sprintf("link with name `%v` exists", params.Name),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.LinkIsExistsError(req.Context(), w, params.Name)
 		return
 	}
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
@@ -102,24 +77,14 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 
 	json.NewDecoder(req.Body).Decode(&params)
 	if params.Link == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "link can not be ampty",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.FieldEmptyError(req.Context(), w, "link")
 		return
 	}
 
 	params.Name = chi.URLParam(req, "name")
 	params.Name, err = strutil.RemoveNonAlphanumerical(params.Name)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
@@ -128,12 +93,7 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if _, err := url.ParseRequestURI(params.Link); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "link must be a vaild url",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InvalidLinkError(req.Context(), w)
 		return
 	}
 
@@ -143,22 +103,12 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
 	}
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": fmt.Sprintf("link with name `%v` exists", params.Name),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.LinkIsExistsError(req.Context(), w, params.Name)
 		return
 	}
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
@@ -176,54 +126,29 @@ func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	name, err = strutil.RemoveNonAlphanumerical(name)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	isExist := models.GetLinkByName(req.Context(), name)
 	if isExist == nil {
-		w.WriteHeader(http.StatusNotFound)
-		resp := map[string]any{
-			"status":  false,
-			"message": fmt.Sprintf("link with name `%v` does not exist", name),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.NotFoundError(req.Context(), w)
 		return
 	}
 
 	json.NewDecoder(req.Body).Decode(&params)
 	if params.Link == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "link can not be ampty",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.FieldEmptyError(req.Context(), w, "link")
 		return
 	}
 
 	link, err := models.UpdateLinkByName(req.Context(), name, params.NewName, params.Link)
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": fmt.Sprintf("link with name `%v` exists", params.NewName),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.LinkIsExistsError(req.Context(), w, params.NewName)
 		return
 	}
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
@@ -236,33 +161,18 @@ func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	name, err = strutil.RemoveNonAlphanumerical(name)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	if name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	err = models.DeleteLinkByName(req.Context(), name)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
@@ -276,22 +186,12 @@ func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	sq, err = strutil.RemoveNonAlphanumerical(sq)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	if len(sq) < 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "search query can not be empty",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.FieldEmptyError(req.Context(), w, "search")
 		return
 	}
 
@@ -301,33 +201,18 @@ func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	l, err := strconv.Atoi(limit)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
 	if 1 > l || l > 100 {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "limit value must be between 1-100",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.LimitRangeError(req.Context(), w)
 		return
 	}
 
 	links, err := models.SearchLinkByName(req.Context(), sq, l)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
@@ -344,33 +229,18 @@ func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
 
 	l, err := strconv.Atoi(limit)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
 	if 1 > l || 1 > 100 {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": "limit value must be between 1-100",
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.LimitRangeError(req.Context(), w)
 		return
 	}
 
 	tl, err := models.TopLinksByVisits(req.Context(), l)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
@@ -383,33 +253,18 @@ func redirectHandler(w http.ResponseWriter, req *http.Request) {
 
 	name, err = strutil.RemoveNonAlphanumerical(name)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	if name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusBadRequest),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
 	link := models.GetLinkByName(req.Context(), name)
 	if link == nil {
-		w.WriteHeader(http.StatusNotFound)
-		resp := map[string]any{
-			"status":  false,
-			"message": fmt.Sprintf("link with name `%v` does not exist", name),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.NotFoundError(req.Context(), w)
 		return
 	}
 
@@ -421,12 +276,7 @@ func redirectHandler(w http.ResponseWriter, req *http.Request) {
 func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
 	links, err := models.GetExpireSoonLinks(req.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp := map[string]any{
-			"status":  false,
-			"message": http.StatusText(http.StatusInternalServerError),
-		}
-		json.NewEncoder(w).Encode(resp)
+		responses.InternalServerError(req.Context(), w)
 		return
 	}
 
