@@ -10,6 +10,7 @@ import (
 	"github.com/itsjoniur/bitlygo/api"
 	"github.com/itsjoniur/bitlygo/internal/configs"
 	"github.com/itsjoniur/bitlygo/internal/durable"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -35,10 +36,10 @@ func main() {
 		Port:     configs.Database.Port,
 		Name:     configs.Database.Name,
 	})
-	// arguments: connection info
 	// create logger
+	logger := durable.NewLogger(logrus.New())
 	// serve HTTP
-	if err := api.StartAPI(nil, db, configs.HTTP.Port); err != nil {
+	if err := api.StartAPI(logger, db, configs.HTTP.Port); err != nil {
 		log.Panicln(err)
 	}
 }
