@@ -6,7 +6,7 @@ create table links(
     link text not null,
     visits int default 0,
     created_at timestamp not null default now(),
-    update_at timestamp not null default now(),
+    updated_at timestamp not null default now(),
     expired_at timestamp,
     deleted_at timestamp
 );
