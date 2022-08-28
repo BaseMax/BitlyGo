@@ -24,4 +24,4 @@ _testmain.go
 *.prof
 
 tern.conf
-./internal/configs/config.yaml
+internal/configs/config.yaml

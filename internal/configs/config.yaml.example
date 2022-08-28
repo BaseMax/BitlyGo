@@ -3,10 +3,10 @@ default: &default
     host: http://localhost
     port: 8000
   database:
-    user: postgres
+    user: user
     password: ""
     host: localhost
     port: 5432
-    name: bitlygo
+    name: db
 
   
