@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	configPath string = "../internal/configs/config.yaml"
+	configPath string = "../config.yaml"
 )
 
 func main() {
