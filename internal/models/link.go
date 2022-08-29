@@ -10,10 +10,12 @@ import (
 	"github.com/itsjoniur/bitlygo/pkg/strutil"
 )
 
+// Constraints for Link model
 const (
 	ExpireTime = time.Hour * 48
 )
 
+// Struct for Link model
 type Link struct {
 	Id        int
 	OwnerId   int
@@ -26,6 +28,7 @@ type Link struct {
 	DeletedAt *time.Time
 }
 
+// CreateLink create new link in database
 func CreateLink(ctx context.Context, owner int, name, link string) (*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	now := time.Now()
@@ -46,6 +49,7 @@ func CreateLink(ctx context.Context, owner int, name, link string) (*Link, error
 	return newLink, nil
 }
 
+// CreateLinkWithExpireTime create new link with expiration time
 func CreateLinkWithExpireTime(ctx context.Context, owner int, name, link string) (*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	now := time.Now()
@@ -69,6 +73,7 @@ func CreateLinkWithExpireTime(ctx context.Context, owner int, name, link string)
 
 }
 
+// GetLinkByName select link from database with given name
 func GetLinkByName(ctx context.Context, name string) *Link {
 	db := ctx.Value(10).(*durable.Database)
 	link := &Link{}
@@ -83,6 +88,7 @@ func GetLinkByName(ctx context.Context, name string) *Link {
 	return link
 }
 
+// SearchLinkByName select matched links from database
 func SearchLinkByName(ctx context.Context, name string, limit int) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
@@ -113,6 +119,7 @@ func SearchLinkByName(ctx context.Context, name string, limit int) ([]*Link, err
 
 }
 
+// TopLinksByVisits select top links by visits from database
 func TopLinksByVisits(ctx context.Context, limit int) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
@@ -141,6 +148,7 @@ func TopLinksByVisits(ctx context.Context, limit int) ([]*Link, error) {
 	return links, nil
 }
 
+// UpdateLinkByName update Link's values in database
 func UpdateLinkByName(ctx context.Context, name, newName, newLink string) (*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	link := &Link{
@@ -161,6 +169,7 @@ func UpdateLinkByName(ctx context.Context, name, newName, newLink string) (*Link
 	return link, nil
 }
 
+// DeleteLinkByName delete the link from database
 func DeleteLinkByName(ctx context.Context, name string) error {
 	db := ctx.Value(10).(*durable.Database)
 
@@ -170,6 +179,7 @@ func DeleteLinkByName(ctx context.Context, name string) error {
 	return err
 }
 
+// AddViewToLinkByName add +1 to the Link's visits
 func AddViewToLinkByName(ctx context.Context, name string) {
 	db := ctx.Value(10).(*durable.Database)
 
@@ -180,6 +190,7 @@ func AddViewToLinkByName(ctx context.Context, name string) {
 	}
 }
 
+// GetExpireSoonLinks select links will be expired soon
 func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
@@ -213,6 +224,7 @@ func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
 	return links, nil
 }
 
+// Generate random unique name for link
 func GetUniqueName(ctx context.Context, l int) string {
 	var name string = ""
 

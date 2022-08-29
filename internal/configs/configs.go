@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Struct for configs
 type Config struct {
 	HTTP struct {
 		Host string `yaml:"host"`
@@ -23,6 +24,7 @@ type Config struct {
 
 var AppConfig *Config
 
+// Init initialize project configuration
 func Init(file string) error {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -40,6 +42,7 @@ func Init(file string) error {
 	return nil
 }
 
+// GetRootDir find the root directory of project
 func GetRootDir() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/unrolled/render"
 )
 
+// Render put render.Render into context
 func Render(r *render.Render) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

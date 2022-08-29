@@ -14,6 +14,7 @@ import (
 	"github.com/itsjoniur/bitlygo/internal/middlewares"
 )
 
+// StartAPI start an API on given port
 func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router := chi.NewRouter()
 	database := durable.WrapDatabase(db)

@@ -11,6 +11,7 @@ import (
 	"github.com/itsjoniur/bitlygo/internal/responses"
 )
 
+// rootHandler show the project documentaion as a HTML page
 func rootHandler(w http.ResponseWriter, req *http.Request) {
 	dir, err := configs.GetRootDir()
 	if err != nil {
