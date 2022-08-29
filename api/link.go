@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/exp/slices"
 
 	"github.com/itsjoniur/bitlygo/internal/models"
 	"github.com/itsjoniur/bitlygo/internal/responses"
@@ -36,6 +37,11 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 	if params.Name == "" {
 		// Generate random string
 		params.Name = models.GetUniqueName(req.Context(), 8)
+	}
+
+	if slices.Contains(ReservedNames(), params.Name) {
+		responses.ReservedNameError(req.Context(), w)
+		return
 	}
 
 	if params.Link == "" {
@@ -95,6 +101,11 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 		params.Name = models.GetUniqueName(req.Context(), 8)
 	}
 
+	if slices.Contains(ReservedNames(), params.Name) {
+		responses.ReservedNameError(req.Context(), w)
+		return
+	}
+
 	if _, err := url.ParseRequestURI(params.Link); err != nil {
 		responses.InvalidLinkError(req.Context(), w)
 		return
@@ -131,6 +142,11 @@ func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 	name, err = strutil.RemoveNonAlphanumerical(name)
 	if err != nil {
 		responses.BadRequestError(req.Context(), w)
+		return
+	}
+
+	if slices.Contains(ReservedNames(), params.NewName) {
+		responses.ReservedNameError(req.Context(), w)
 		return
 	}
 
@@ -172,6 +188,11 @@ func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	if name == "" {
 		responses.BadRequestError(req.Context(), w)
+		return
+	}
+
+	if slices.Contains(ReservedNames(), name) {
+		responses.ReservedNameError(req.Context(), w)
 		return
 	}
 
@@ -290,4 +311,9 @@ func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	responses.RenderExpireLinkResponse(req.Context(), w, links)
+}
+
+// ReservedNames return reserved names
+func ReservedNames() []string {
+	return []string{"add", "top", "search", "expire-soon"}
 }

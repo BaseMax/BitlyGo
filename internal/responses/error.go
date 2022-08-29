@@ -79,6 +79,15 @@ func LimitRangeError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusBadRequest, resp)
 }
 
+// ReservedNameError means the name is reserved
+func ReservedNameError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
+	description := "the name is reserved"
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
+}
+
 // CreateErr create a new ErrorResponse
 func createErr(ctx context.Context, description string) *ErrorResponse {
 	logger := ctx.Value(1).(*durable.Logger)
