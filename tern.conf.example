@@ -1,13 +1,10 @@
 [database]
-# host is required (network host or path to Unix domain socket)
-# host = example.com
-# port = 5432
-# database is required
-# database = database
-# user defaults to OS user
-# user = user is required
-# password = password is required
-# version_table = public.schema_version
+# host = example.com [required]
+# port = 5432 [optional]
+# database = database [required]
+# user = user [required]
+# password = password [required]
+# version_table = public.schema_version [optional]
 #
 # sslmode generally matches the behavior described in:
 # http://www.postgresql.org/docs/9.4/static/libpq-ssl.html#LIBPQ-SSL-PROTECTION
