@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-chi/chi/v5 v5.0.7 // indirect
+	github.com/gomarkdown/markdown v0.0.0-20220825072242-90efaac57fb4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
