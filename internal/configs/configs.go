@@ -2,10 +2,12 @@ package configs
 
 import (
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
 
+// Struct for configs
 type Config struct {
 	HTTP struct {
 		Host string `yaml:"host"`
@@ -22,6 +24,7 @@ type Config struct {
 
 var AppConfig *Config
 
+// Init initialize project configuration
 func Init(file string) error {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -37,4 +40,13 @@ func Init(file string) error {
 	cfg := configs["default"]
 	AppConfig = &cfg
 	return nil
+}
+
+// GetRootDir find the root directory of project
+func GetRootDir() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return wd, nil
 }

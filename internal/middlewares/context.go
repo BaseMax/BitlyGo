@@ -7,6 +7,7 @@ import (
 	"github.com/itsjoniur/bitlygo/internal/durable"
 )
 
+// ContextMiddleware put durable.Database into context
 func ContextMiddleware(db *durable.Database) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

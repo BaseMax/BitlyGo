@@ -10,11 +10,13 @@ import (
 	"github.com/unrolled/render"
 )
 
+// Struct for error responses
 type ErrorResponse struct {
 	Status  bool   `json:"status" default:"false"`
 	Message string `json:"message"`
 }
 
+// BadRequestError means the request body is not a valid format
 func BadRequestError(ctx context.Context, w http.ResponseWriter) {
 	r := ctx.Value(2).(*render.Render)
 	description := "The request body can not be parsed as valid data"
@@ -23,6 +25,7 @@ func BadRequestError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusBadRequest, resp)
 }
 
+// NotFoundError means recourse is not found
 func NotFoundError(ctx context.Context, w http.ResponseWriter) {
 	r := ctx.Value(2).(*render.Render)
 	description := http.StatusText(http.StatusNotFound)
@@ -31,6 +34,7 @@ func NotFoundError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusNotFound, resp)
 }
 
+// InternalServerError means something not expected happend
 func InternalServerError(ctx context.Context, w http.ResponseWriter) {
 	r := ctx.Value(2).(*render.Render)
 	description := http.StatusText(http.StatusInternalServerError)
@@ -39,6 +43,7 @@ func InternalServerError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusInternalServerError, resp)
 }
 
+// InvalidLinkError means the link value is not a valid url
 func InvalidLinkError(ctx context.Context, w http.ResponseWriter) {
 	r := ctx.Value(2).(*render.Render)
 	description := "link value must be a valid url"
@@ -47,6 +52,7 @@ func InvalidLinkError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusBadRequest, resp)
 }
 
+// LinkIsExistsError means link is already exists in database
 func LinkIsExistsError(ctx context.Context, w http.ResponseWriter, name string) {
 	r := ctx.Value(2).(*render.Render)
 	description := fmt.Sprintf("link with name %s exists", name)
@@ -55,6 +61,7 @@ func LinkIsExistsError(ctx context.Context, w http.ResponseWriter, name string) 
 	r.JSON(w, http.StatusConflict, resp)
 }
 
+// FieldEmptyError means a required field is empty
 func FieldEmptyError(ctx context.Context, w http.ResponseWriter, field string) {
 	r := ctx.Value(2).(*render.Render)
 	description := fmt.Sprintf("field %s can not be empty", field)
@@ -63,6 +70,7 @@ func FieldEmptyError(ctx context.Context, w http.ResponseWriter, field string) {
 	r.JSON(w, http.StatusBadRequest, resp)
 }
 
+// LimitRangeError means the limit value is out of expected range
 func LimitRangeError(ctx context.Context, w http.ResponseWriter) {
 	r := ctx.Value(2).(*render.Render)
 	description := "limit value must be between 1-100"
@@ -71,6 +79,24 @@ func LimitRangeError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusBadRequest, resp)
 }
 
+// ReservedNameError means the name is reserved
+func ReservedNameError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
+	description := "the name is reserved"
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
+}
+
+func LinkNameLengthError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
+	description := "name length should be between 4-25"
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
+}
+
+// CreateErr create a new ErrorResponse
 func createErr(ctx context.Context, description string) *ErrorResponse {
 	logger := ctx.Value(1).(*durable.Logger)
 

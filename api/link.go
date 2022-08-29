@@ -8,12 +8,14 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/exp/slices"
 
 	"github.com/itsjoniur/bitlygo/internal/models"
 	"github.com/itsjoniur/bitlygo/internal/responses"
 	"github.com/itsjoniur/bitlygo/pkg/strutil"
 )
 
+// AddLinkHandler store new links in database
 func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 	type Params struct {
 		Name string `json:"name"`
@@ -34,7 +36,17 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	if params.Name == "" {
 		// Generate random string
-		params.Name = strutil.RandStringRunes(8)
+		params.Name = models.GetUniqueName(req.Context(), 8)
+	}
+
+	if slices.Contains(ReservedNames(), params.Name) {
+		responses.ReservedNameError(req.Context(), w)
+		return
+	}
+
+	if 4 > len(params.Name) || len(params.Name) > 25 {
+		responses.LinkNameLengthError(req.Context(), w)
+		return
 	}
 
 	if params.Link == "" {
@@ -66,6 +78,7 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 	responses.RenderNewLinkResponse(req.Context(), w, link)
 }
 
+// AddLinkByPathHandler same addLinkHandler but get the link name from url path
 func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 	type Params struct {
 		Name string `json:"name"`
@@ -90,7 +103,17 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if params.Name == "" {
-		params.Name = strutil.RandStringRunes(8)
+		params.Name = models.GetUniqueName(req.Context(), 8)
+	}
+
+	if slices.Contains(ReservedNames(), params.Name) {
+		responses.ReservedNameError(req.Context(), w)
+		return
+	}
+
+	if 4 > len(params.Name) || len(params.Name) > 25 {
+		responses.LinkNameLengthError(req.Context(), w)
+		return
 	}
 
 	if _, err := url.ParseRequestURI(params.Link); err != nil {
@@ -116,6 +139,7 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 	responses.RenderNewLinkResponse(req.Context(), w, link)
 }
 
+// UpdateLinkHandler update link and name values of a Link
 func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 	type Params struct {
 		NewName string `json:"new_name"`
@@ -128,6 +152,11 @@ func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 	name, err = strutil.RemoveNonAlphanumerical(name)
 	if err != nil {
 		responses.BadRequestError(req.Context(), w)
+		return
+	}
+
+	if slices.Contains(ReservedNames(), params.NewName) {
+		responses.ReservedNameError(req.Context(), w)
 		return
 	}
 
@@ -156,6 +185,7 @@ func updateLinkHandler(w http.ResponseWriter, req *http.Request) {
 	responses.RenderNewLinkResponse(req.Context(), w, link)
 }
 
+// DeleteLinkHandler delete a link from database
 func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
 	var err error
 	name := chi.URLParam(req, "name")
@@ -171,6 +201,11 @@ func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if slices.Contains(ReservedNames(), name) {
+		responses.ReservedNameError(req.Context(), w)
+		return
+	}
+
 	err = models.DeleteLinkByName(req.Context(), name)
 	if err != nil {
 		responses.InternalServerError(req.Context(), w)
@@ -180,6 +215,7 @@ func deleteLinkHandler(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(map[string]bool{"status": true})
 }
 
+// SearchLinkHandler find matched links
 func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 	var err error
 	sq := req.URL.Query().Get("q")
@@ -221,6 +257,7 @@ func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 }
 
+// ShowTopLinksHandler show top links by visits
 func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
 	limit := req.URL.Query().Get("limit")
 
@@ -248,6 +285,7 @@ func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
 	responses.RenderTopLinksResponse(req.Context(), w, tl)
 }
 
+// RedirectHandler redirect to target link
 func redirectHandler(w http.ResponseWriter, req *http.Request) {
 	var err error
 	name := chi.URLParam(req, "name")
@@ -274,6 +312,7 @@ func redirectHandler(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, link.Link, http.StatusPermanentRedirect)
 }
 
+// ShowTopLinksHandler show links will be expired soon
 func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
 	links, err := models.GetExpireSoonLinks(req.Context())
 	if err != nil {
@@ -282,4 +321,9 @@ func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	responses.RenderExpireLinkResponse(req.Context(), w, links)
+}
+
+// ReservedNames return reserved names
+func ReservedNames() []string {
+	return []string{"add", "top", "search", "expire-soon"}
 }
