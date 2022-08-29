@@ -44,6 +44,11 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if 4 > len(params.Name) || len(params.Name) > 25 {
+		responses.LinkNameLengthError(req.Context(), w)
+		return
+	}
+
 	if params.Link == "" {
 		// Link is a required field and when it's empty we should return an error
 		responses.BadRequestError(req.Context(), w)
@@ -103,6 +108,11 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 
 	if slices.Contains(ReservedNames(), params.Name) {
 		responses.ReservedNameError(req.Context(), w)
+		return
+	}
+
+	if 4 > len(params.Name) || len(params.Name) > 25 {
+		responses.LinkNameLengthError(req.Context(), w)
 		return
 	}
 
