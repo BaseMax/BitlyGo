@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	"path"
-	"path/filepath"
-	"runtime"
 
 	"github.com/sirupsen/logrus"
 
@@ -15,13 +13,15 @@ import (
 )
 
 var (
-	configPath string = "../config.yaml"
+	configPath string = "config.yaml"
 )
 
 func main() {
 	// Initialize configuration
-	_, b, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(path.Join(path.Dir(b)))
+	dir, err := configs.GetRootDir()
+	if err != nil {
+		logrus.Panicln(err)
+	}
 
 	configPath = path.Join(dir, configPath)
 	if err := configs.Init(configPath); err != nil {

@@ -5,16 +5,17 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
-	"runtime"
 
 	"github.com/gomarkdown/markdown"
+	"github.com/itsjoniur/bitlygo/internal/configs"
 	"github.com/itsjoniur/bitlygo/internal/responses"
 )
 
 func rootHandler(w http.ResponseWriter, req *http.Request) {
-	_, b, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(path.Join(path.Dir(b)))
+	dir, err := configs.GetRootDir()
+	if err != nil {
+		responses.InternalServerError(req.Context(), w)
+	}
 	dat, err := os.ReadFile(path.Join(dir, "README.md"))
 	if err != nil {
 		fmt.Println(err)

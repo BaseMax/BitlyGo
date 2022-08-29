@@ -2,6 +2,7 @@ package configs
 
 import (
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -37,4 +38,12 @@ func Init(file string) error {
 	cfg := configs["default"]
 	AppConfig = &cfg
 	return nil
+}
+
+func GetRootDir() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return wd, err
 }
