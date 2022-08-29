@@ -45,5 +45,5 @@ func GetRootDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return wd, err
+	return wd, nil
 }
