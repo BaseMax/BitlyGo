@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/unrolled/render"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/unrolled/render"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
 	"github.com/itsjoniur/bitlygo/internal/middlewares"
@@ -26,7 +26,6 @@ func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router.Use(middleware.Logger) // http requests logger
 	router.Use(middleware.StripSlashes)
 	router.Use(middleware.Recoverer)
-	
 	// Register routes
 	router.Get("/", rootHandler)
 	router.Post("/add", addLinkHandler)
