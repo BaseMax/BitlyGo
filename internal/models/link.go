@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
+	"github.com/itsjoniur/bitlygo/pkg/strutil"
 )
 
 const (
@@ -210,4 +211,19 @@ func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
 	}
 
 	return links, nil
+}
+
+func GetUniqueName(ctx context.Context, l int) string {
+	var name string = ""
+
+	for len(name) == 0 {
+		tn := strutil.RandStringRunes(l)
+		link := GetLinkByName(ctx, tn)
+		if link != nil {
+			continue
+		}
+		name = tn
+	}
+
+	return name
 }

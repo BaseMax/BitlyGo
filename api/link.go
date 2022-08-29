@@ -34,7 +34,7 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 
 	if params.Name == "" {
 		// Generate random string
-		params.Name = strutil.RandStringRunes(8)
+		params.Name = models.GetUniqueName(req.Context(), 8)
 	}
 
 	if params.Link == "" {
@@ -90,7 +90,7 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if params.Name == "" {
-		params.Name = strutil.RandStringRunes(8)
+		params.Name = models.GetUniqueName(req.Context(), 8)
 	}
 
 	if _, err := url.ParseRequestURI(params.Link); err != nil {
