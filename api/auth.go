@@ -68,7 +68,7 @@ func UserLoginHandler(w http.ResponseWriter, req *http.Request) {
 
 	user := models.GetUserByUsername(req.Context(), authParam.Username)
 	if user == nil {
-		// return user does not exist
+		responses.NotFoundError(req.Context(), w)
 		return
 	}
 
