@@ -63,7 +63,18 @@ func CreateLinkWithExpireTime(ctx context.Context, owner int, name, link string)
 		ExpiredAt: &exp,
 	}
 
-	query := "INSERT INTO links(owner_id, name, link, created_at, updated_at, expired_at) VALUES($1, $2, $3, $4, $5, $6);"
+	query := `
+		INSERT
+		INTO links(
+			owner_id,
+			name,
+			link,
+			created_at,
+			updated_at,
+			expired_at
+		)
+		VALUES((CASE WHEN $1 = 0 THEN NULL ELSE $1 END), $2, $3, $4, $5, $6);
+	`
 	values := []interface{}{newLink.OwnerId, newLink.Name, newLink.Link, newLink.CreatedAt, newLink.UpdatedAt, newLink.ExpiredAt}
 	_, err := db.Exec(context.Background(), query, values...)
 	if err != nil {
