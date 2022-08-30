@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     deleted_at TIMESTAMP
 );
 
-create table links(
+CREATE TABLE IF NOT EXISTS links(
     id SERIAL PRIMARY KEY,
     owner_id INTEGER,
     name VARCHAR(155) NOT NULL UNIQUE,
