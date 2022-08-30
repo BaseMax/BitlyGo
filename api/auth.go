@@ -31,14 +31,13 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 
 	isExist := models.GetUserByUsername(req.Context(), authParam.Username)
 	if isExist != nil {
-		// return user exist
+		responses.UserIsExistsError(req.Context(), w)
 		return
 	}
 
 	user, err := models.CreateUser(req.Context(), authParam.Username, authParam.Password)
 	if err != nil && strings.Contains(err.Error(), "duplicate key") {
-		// User Is exist
-		w.Write([]byte("duplicated"))
+		responses.UserIsExistsError(req.Context(), w)
 		return
 	}
 
