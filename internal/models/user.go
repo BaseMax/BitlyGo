@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
@@ -33,14 +34,13 @@ func CreateUser(ctx context.Context, username, password string) (*User, error) {
 		Password:  hashedPassword,
 		CreatedAt: now,
 	}
-	query := "INSERT INTO users(username, password, created_at) VALUES($1, $2, $3)"
+	query := "INSERT INTO users(username, password, created_at) VALUES($1, $2, $3) RETURNING id"
 	values := []interface{}{newUser.Username, newUser.Password, newUser.CreatedAt}
 
-	_, err = db.Exec(context.Background(), query, values...)
-	if err != nil {
-		return nil, err
+	db.QueryRow(context.Background(), query, values...).Scan(&newUser.ID)
+	if newUser.ID == 0 {
+		return nil, errors.New("user not created")
 	}
-
 	return newUser, nil
 }
 
