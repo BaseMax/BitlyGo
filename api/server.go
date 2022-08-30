@@ -38,6 +38,8 @@ func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router.Get("/search", searchLinkHandler)
 	router.Get("/top", showTopLinksHandler)
 	router.Get("/expire-soon", showExpireSoonLinksHandler)
+	router.Post("/register", UserRegisterHandler)
+	router.Post("/login", UserLoginHandler)
 
 	go func() {
 		for {
