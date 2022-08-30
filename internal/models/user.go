@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
+	"github.com/itsjoniur/bitlygo/pkg/auth"
 )
 
 type User struct {
@@ -19,16 +20,23 @@ type User struct {
 func CreateUser(ctx context.Context, username, password string) (*User, error) {
 	db := ctx.Value(10).(*durable.Database)
 	now := time.Now()
+	var err error
+	var hashedPassword string
+
+	hashedPassword, err = auth.HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
 
 	newUser := &User{
 		Username:  username,
-		Password:  password,
+		Password:  hashedPassword,
 		CreatedAt: now,
 	}
 	query := "INSERT INTO users(username, password, created_at) VALUES($1, $2, $3)"
 	values := []interface{}{newUser.Username, newUser.Password, newUser.CreatedAt}
 
-	_, err := db.Exec(context.Background(), query, values...)
+	_, err = db.Exec(context.Background(), query, values...)
 	if err != nil {
 		return nil, err
 	}
