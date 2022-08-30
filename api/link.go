@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/exp/slices"
 
+	"github.com/itsjoniur/bitlygo/internal/middlewares"
 	"github.com/itsjoniur/bitlygo/internal/models"
 	"github.com/itsjoniur/bitlygo/internal/responses"
 	"github.com/itsjoniur/bitlygo/pkg/strutil"
@@ -23,7 +24,6 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	var err error
 	link := &models.Link{}
-	apiKey := req.Header.Get("API-KEY")
 
 	params := Params{}
 	json.NewDecoder(req.Body).Decode(&params)
@@ -60,8 +60,9 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if apiKey != "" {
-		link, err = models.CreateLink(req.Context(), 0, params.Name, params.Link)
+	user := middlewares.CurrentUser(req)
+	if user != nil {
+		link, err = models.CreateLink(req.Context(), user.ID, params.Name, params.Link)
 	} else {
 		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
 	}
