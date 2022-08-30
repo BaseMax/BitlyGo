@@ -49,7 +49,7 @@ func GetUserByUsername(ctx context.Context, username string) *User {
 	user := &User{}
 
 	query := "SELECT id, username, password FROM users WHERE username = $1"
-	db.QueryRow(context.Background(), query, username).Scan(user.ID, user.Username, user.Password)
+	db.QueryRow(context.Background(), query, username).Scan(&user.ID, &user.Username, &user.Password)
 
 	if user.Username == "" && user.Password == "" {
 		return nil
