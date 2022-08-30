@@ -46,8 +46,13 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	key, err := models.CreateApiKey(req.Context(), user)
+	if err != nil {
+		responses.InternalServerError(req.Context(), w)
+		return
+	}
 	// render user response
-	json.NewEncoder(w).Encode(user)
+	responses.RenderUserResponse(req.Context(), w, user, key)
 }
 
 func UserLoginHandler(w http.ResponseWriter, req *http.Request) {
