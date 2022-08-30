@@ -69,7 +69,7 @@ func GetUserByApiKey(ctx context.Context, apiKey string) *User {
 			SELECT user_id FROM api_keys WHERE key = $1
 		);
 	`
-	db.QueryRow(context.Background(), query, apiKey).Scan(user.ID, user.Username)
+	db.QueryRow(context.Background(), query, apiKey).Scan(&user.ID, &user.Username)
 
 	if user.Username == "" {
 		return nil
