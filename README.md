@@ -8,6 +8,52 @@ URL Shortener - Short URLs & Custom Free Link Powered by GoLang and PostgreSQL d
 
 This route will show this README to show the features of the projects to everyone.
 
+### `POST /register`
+- STRING `username`(required)
+- STRING `password`(required)
+This route will make new user if didn't exist
+
+Example response:
+```json
+{
+	"username": "john",
+	"api_key": "abcd-efgh-ijkl-mnop-124v-852a"
+}
+```
+
+
+OR
+
+```json
+{
+    "status": false,
+    "message": "Error message"
+}
+```
+
+### `POST /login`
+- STRING `username` (required)
+- STRING `password` (required)
+This route will log into user account if exists
+
+Example response:
+```json
+{
+	"status": true
+}
+```
+
+
+OR
+
+
+```json
+{
+	"status": false,
+	"message": "Error message"
+}
+```
+
 ### `GET /search`
 
 - STRING `q` (required, The minimum length is 1 and does not allow empty queries also we will trim the value to make it ready to search)
