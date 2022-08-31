@@ -1,5 +1,5 @@
 [database]
-# host = example.com [required]
+host = postgres
 # port = 5432 [optional]
 # database = database [required]
 # user = user [required]

@@ -18,10 +18,10 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_HOST: localhost
+      POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1243
+      POSTGRES_PASSWORD: 1111
       POSTGRES_DB: bitlygo
     volumes:
       - bitlygo:/var/lib/postgres/data
