@@ -16,58 +16,49 @@ import (
 	"github.com/itsjoniur/bitlygo/pkg/strutil"
 )
 
-// AddLinkHandler store new links in database
-func addLinkHandler(w http.ResponseWriter, req *http.Request) {
-	type Params struct {
-		Name string `json:"name"`
-		Link string `json:"link"`
-	}
+func createLink(w http.ResponseWriter, req *http.Request, name, link string) {
 	var err error
-	link := &models.Link{}
+	newLink := &models.Link{}
 
-	params := Params{}
-	json.NewDecoder(req.Body).Decode(&params)
-
-	params.Name, err = strutil.RemoveNonAlphanumerical(params.Name)
+	name, err = strutil.RemoveNonAlphanumerical(name)
 	if err != nil {
 		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
-	if params.Name == "" {
-		// Generate random string
-		params.Name = models.GetUniqueName(req.Context(), 8)
+	if name == "" {
+		name = models.GetUniqueName(req.Context(), 8)
 	}
 
-	if slices.Contains(ReservedNames(), params.Name) {
+	if slices.Contains(ReservedNames(), name) {
 		responses.ReservedNameError(req.Context(), w)
 		return
 	}
 
-	if 4 > len(params.Name) || len(params.Name) > 25 {
+	if 4 > len(name) || len(name) > 25 {
 		responses.LinkNameLengthError(req.Context(), w)
 		return
 	}
 
-	if params.Link == "" {
+	if link == "" {
 		// Link is a required field and when it's empty we should return an error
 		responses.BadRequestError(req.Context(), w)
 		return
 	}
 
-	if _, err := url.ParseRequestURI(params.Link); err != nil {
+	if _, err := url.ParseRequestURI(link); err != nil {
 		responses.InvalidLinkError(req.Context(), w)
 		return
 	}
 
 	user := middlewares.CurrentUser(req)
 	if user != nil {
-		link, err = models.CreateLink(req.Context(), user.ID, params.Name, params.Link)
+		newLink, err = models.CreateLink(req.Context(), user.ID, name, link)
 	} else {
-		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
+		newLink, err = models.CreateLinkWithExpireTime(req.Context(), 0, name, link)
 	}
 	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
-		responses.LinkIsExistsError(req.Context(), w, params.Name)
+		responses.LinkIsExistsError(req.Context(), w, name)
 		return
 	}
 
@@ -76,7 +67,20 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	responses.RenderNewLinkResponse(req.Context(), w, link)
+	responses.RenderNewLinkResponse(req.Context(), w, newLink)
+}
+
+// AddLinkHandler store new links in database
+func addLinkHandler(w http.ResponseWriter, req *http.Request) {
+	type Params struct {
+		Name string `json:"name"`
+		Link string `json:"link"`
+	}
+	params := Params{}
+
+	json.NewDecoder(req.Body).Decode(&params)
+	createLink(w, req, params.Name, params.Link)
+
 }
 
 // AddLinkByPathHandler same addLinkHandler but get the link name from url path
@@ -85,59 +89,10 @@ func addLinkByPathHandler(w http.ResponseWriter, req *http.Request) {
 		Name string `json:"name"`
 		Link string `json:"link"`
 	}
-	var err error
-	link := &models.Link{}
 	params := Params{}
-	apiKey := req.Header.Get("API-KEY")
 
 	json.NewDecoder(req.Body).Decode(&params)
-	if params.Link == "" {
-		responses.FieldEmptyError(req.Context(), w, "link")
-		return
-	}
-
-	params.Name = chi.URLParam(req, "name")
-	params.Name, err = strutil.RemoveNonAlphanumerical(params.Name)
-	if err != nil {
-		responses.BadRequestError(req.Context(), w)
-		return
-	}
-
-	if params.Name == "" {
-		params.Name = models.GetUniqueName(req.Context(), 8)
-	}
-
-	if slices.Contains(ReservedNames(), params.Name) {
-		responses.ReservedNameError(req.Context(), w)
-		return
-	}
-
-	if 4 > len(params.Name) || len(params.Name) > 25 {
-		responses.LinkNameLengthError(req.Context(), w)
-		return
-	}
-
-	if _, err := url.ParseRequestURI(params.Link); err != nil {
-		responses.InvalidLinkError(req.Context(), w)
-		return
-	}
-
-	if apiKey != "" {
-		link, err = models.CreateLink(req.Context(), 0, params.Name, params.Link)
-	} else {
-		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
-	}
-	if err != nil && strings.Contains(string(err.Error()), "duplicate key") {
-		responses.LinkIsExistsError(req.Context(), w, params.Name)
-		return
-	}
-
-	if err != nil {
-		responses.InternalServerError(req.Context(), w)
-		return
-	}
-
-	responses.RenderNewLinkResponse(req.Context(), w, link)
+	createLink(w, req, params.Name, params.Link)
 }
 
 // UpdateLinkHandler update link and name values of a Link
