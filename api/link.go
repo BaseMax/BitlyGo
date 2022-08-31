@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/exp/slices"
 
+	"github.com/itsjoniur/bitlygo/internal/middlewares"
 	"github.com/itsjoniur/bitlygo/internal/models"
 	"github.com/itsjoniur/bitlygo/internal/responses"
 	"github.com/itsjoniur/bitlygo/pkg/strutil"
@@ -23,7 +24,6 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	var err error
 	link := &models.Link{}
-	apiKey := req.Header.Get("API-KEY")
 
 	params := Params{}
 	json.NewDecoder(req.Body).Decode(&params)
@@ -60,8 +60,9 @@ func addLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if apiKey != "" {
-		link, err = models.CreateLink(req.Context(), 0, params.Name, params.Link)
+	user := middlewares.CurrentUser(req)
+	if user != nil {
+		link, err = models.CreateLink(req.Context(), user.ID, params.Name, params.Link)
 	} else {
 		link, err = models.CreateLinkWithExpireTime(req.Context(), 0, params.Name, params.Link)
 	}
@@ -247,7 +248,13 @@ func searchLinkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	links, err := models.SearchLinkByName(req.Context(), sq, l)
+	var links []*models.Link
+	user := middlewares.CurrentUser(req)
+	if user != nil {
+		links, err = models.SearchLinkByName(req.Context(), sq, user.ID, l)
+	} else {
+		links, err = models.SearchLinkByName(req.Context(), sq, 0, l)
+	}
 	if err != nil {
 		responses.InternalServerError(req.Context(), w)
 		return
@@ -276,7 +283,13 @@ func showTopLinksHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	tl, err := models.TopLinksByVisits(req.Context(), l)
+	var tl []*models.Link
+	user := middlewares.CurrentUser(req)
+	if user != nil {
+		tl, err = models.TopLinksByVisits(req.Context(), user.ID, l)
+	} else {
+		tl, err = models.TopLinksByVisits(req.Context(), 0, l)
+	}
 	if err != nil {
 		responses.InternalServerError(req.Context(), w)
 		return
@@ -314,7 +327,15 @@ func redirectHandler(w http.ResponseWriter, req *http.Request) {
 
 // ShowTopLinksHandler show links will be expired soon
 func showExpireSoonLinksHandler(w http.ResponseWriter, req *http.Request) {
-	links, err := models.GetExpireSoonLinks(req.Context())
+	var links []*models.Link
+	var err error
+
+	user := middlewares.CurrentUser(req)
+	if user != nil {
+		links, err = models.GetExpireSoonLinks(req.Context(), user.ID)
+	} else {
+		links, err = models.GetExpireSoonLinks(req.Context(), 0)
+	}
 	if err != nil {
 		responses.InternalServerError(req.Context(), w)
 		return

@@ -40,7 +40,17 @@ func CreateLink(ctx context.Context, owner int, name, link string) (*Link, error
 		UpdatedAt: now,
 	}
 
-	query := "INSERT INTO links(owner_id, name, link, created_at, updated_at) VALUES($1, $2, $3, $4, $5);"
+	query := `
+		INSERT
+		INTO links(
+			owner_id,
+			name,
+			link,
+			created_at,
+			updated_at
+		)
+		VALUES((CASE WHEN $1 = 0 THEN NULL ELSE $1 END), $2, $3, $4, $5);
+	`
 	values := []interface{}{newLink.OwnerId, newLink.Name, newLink.Link, newLink.CreatedAt, newLink.UpdatedAt}
 	_, err := db.Exec(context.Background(), query, values...)
 	if err != nil {
@@ -63,7 +73,18 @@ func CreateLinkWithExpireTime(ctx context.Context, owner int, name, link string)
 		ExpiredAt: &exp,
 	}
 
-	query := "INSERT INTO links(owner_id, name, link, created_at, updated_at, expired_at) VALUES($1, $2, $3, $4, $5, $6);"
+	query := `
+		INSERT
+		INTO links(
+			owner_id,
+			name,
+			link,
+			created_at,
+			updated_at,
+			expired_at
+		)
+		VALUES((CASE WHEN $1 = 0 THEN NULL ELSE $1 END), $2, $3, $4, $5, $6);
+	`
 	values := []interface{}{newLink.OwnerId, newLink.Name, newLink.Link, newLink.CreatedAt, newLink.UpdatedAt, newLink.ExpiredAt}
 	_, err := db.Exec(context.Background(), query, values...)
 	if err != nil {
@@ -89,12 +110,25 @@ func GetLinkByName(ctx context.Context, name string) *Link {
 }
 
 // SearchLinkByName select matched links from database
-func SearchLinkByName(ctx context.Context, name string, limit int) ([]*Link, error) {
+func SearchLinkByName(ctx context.Context, name string, owner, limit int) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
 
-	query := fmt.Sprintf("SELECT name, link FROM links WHERE name LIKE '%%%v%%' LIMIT $1;", name)
-	rows, err := db.Query(context.Background(), query, limit)
+	query := fmt.Sprintf(`
+		SELECT
+			name, link
+		FROM links
+		WHERE
+			name LIKE '%%%v%%'
+		AND
+			CASE
+				WHEN $1 > 0 THEN owner_id = $1
+				ELSE (owner_id = owner_id OR owner_id IS NULL)
+			END
+		LIMIT $2;
+	`, name)
+	values := []interface{}{owner, limit}
+	rows, err := db.Query(context.Background(), query, values...)
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +154,22 @@ func SearchLinkByName(ctx context.Context, name string, limit int) ([]*Link, err
 }
 
 // TopLinksByVisits select top links by visits from database
-func TopLinksByVisits(ctx context.Context, limit int) ([]*Link, error) {
+func TopLinksByVisits(ctx context.Context, owner, limit int) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
 
-	query := "SELECT name, link, visits FROM links ORDER BY visits DESC LIMIT $1;"
-	rows, err := db.Query(context.Background(), query, limit)
+	query := `
+		SELECT
+			name, link, visits
+		FROM links
+		WHERE CASE
+			WHEN $1 > 0 THEN owner_id = $1
+			ELSE (owner_id = owner_id OR owner_id IS NULL)
+		END
+		ORDER BY visits DESC LIMIT $2;
+	`
+	values := []interface{}{owner, limit}
+	rows, err := db.Query(context.Background(), query, values...)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +235,7 @@ func AddViewToLinkByName(ctx context.Context, name string) {
 }
 
 // GetExpireSoonLinks select links will be expired soon
-func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
+func GetExpireSoonLinks(ctx context.Context, owner int) ([]*Link, error) {
 	db := ctx.Value(10).(*durable.Database)
 	links := []*Link{}
 
@@ -199,9 +243,16 @@ func GetExpireSoonLinks(ctx context.Context) ([]*Link, error) {
 		SELECT name, link
 		FROM links
 		WHERE
-		(EXTRACT(EPOCH FROM expired_at) / 3600 - EXTRACT(EPOCH FROM NOW()) / 3600) <= $1;
+			(EXTRACT(EPOCH FROM expired_at) / 3600 - EXTRACT(EPOCH FROM NOW()) / 3600) <= $1
+		AND
+			CASE
+				WHEN $2 > 0 THEN owner_id = $2
+				ELSE (owner_id = owner_id OR owner_id IS NULL)
+			END
+		;
 	`
-	rows, err := db.Query(context.Background(), query, (ExpireTime / 3).Hours())
+	values := []interface{}{(ExpireTime / 3).Hours(), owner}
+	rows, err := db.Query(context.Background(), query, values...)
 	if err != nil {
 		return nil, err
 	}

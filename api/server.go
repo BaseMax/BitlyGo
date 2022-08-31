@@ -12,6 +12,7 @@ import (
 
 	"github.com/itsjoniur/bitlygo/internal/durable"
 	"github.com/itsjoniur/bitlygo/internal/middlewares"
+	"github.com/itsjoniur/bitlygo/internal/schedulers"
 )
 
 // StartAPI start an API on given port
@@ -37,6 +38,14 @@ func StartAPI(logger *durable.Logger, db *pgxpool.Pool, port string) error {
 	router.Get("/search", searchLinkHandler)
 	router.Get("/top", showTopLinksHandler)
 	router.Get("/expire-soon", showExpireSoonLinksHandler)
+	router.Post("/register", UserRegisterHandler)
+	router.Post("/login", UserLoginHandler)
+
+	go func() {
+		for {
+			schedulers.RemoveExpiredLinks(database, logger)
+		}
+	}()
 
 	// Serve HTTP
 	log.Printf("Server running on %v port...", port)

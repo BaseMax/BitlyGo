@@ -4,7 +4,7 @@ default: &default
     port: 8000
   database:
     user: user
-    password: ""
-    host: localhost
+    password: pass 
+    host: postgres
     port: 5432
     name: db
