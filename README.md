@@ -36,8 +36,8 @@ This route will show this README to show the features of the projects to everyon
 
 ### `POST /register`
 
-- STRING `username`(required)
-- STRING `password`(required)
+- STRING `username` (required)
+- STRING `password` (required)
 
 This route will make new user if didn't exist
 
