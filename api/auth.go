@@ -29,6 +29,11 @@ func UserRegisterHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if len(authParam.Username) < 4 || len(authParam.Username) > 88 {
+		responses.UsernameLengthError(req.Context(), w)
+		return
+	}
+
 	isExist := models.GetUserByUsername(req.Context(), authParam.Username)
 	if isExist != nil {
 		responses.UserIsExistsError(req.Context(), w)

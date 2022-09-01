@@ -104,6 +104,14 @@ func UserIsExistsError(ctx context.Context, w http.ResponseWriter) {
 	r.JSON(w, http.StatusBadRequest, resp)
 }
 
+func UsernameLengthError(ctx context.Context, w http.ResponseWriter) {
+	r := ctx.Value(2).(*render.Render)
+	description := "username length should be between 4-88"
+	resp := createErr(ctx, description)
+
+	r.JSON(w, http.StatusBadRequest, resp)
+}
+
 // CreateErr create a new ErrorResponse
 func createErr(ctx context.Context, description string) *ErrorResponse {
 	logger := ctx.Value(1).(*durable.Logger)
