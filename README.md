@@ -36,7 +36,7 @@ This route will show this README to show the features of the projects to everyon
 
 ### `POST /register`
 
-- STRING `username` (required)
+- STRING `username` (required, The minimum length is 4 and maximum length is 88 also does not allow empty username)
 - STRING `password` (required)
 
 This route will make new user if didn't exist
@@ -47,6 +47,15 @@ Example response:
 {
    "username": "john",
    "api_key": "abcd-efgh-ijkl-mnop-124v-852a"
+}
+```
+
+OR
+
+```json
+{
+   "status": false,
+   "message": "Error message"
 }
 ```
 
@@ -69,7 +78,7 @@ OR
 ```json
 {
    "status": false,
-   "message": "something went wrong"
+   "message": "Error message"
 }
 ```
 
