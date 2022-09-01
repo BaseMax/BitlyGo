@@ -45,8 +45,8 @@ Example response:
 
 ```json
 {
-	"username": "john",
-	"api_key": "abcd-efgh-ijkl-mnop-124v-852a"
+   "username": "john",
+   "api_key": "abcd-efgh-ijkl-mnop-124v-852a"
 }
 ```
 
@@ -60,7 +60,7 @@ This route will log into user account if exists
 Example response:
 ```json
 {
-	"status": true
+   "status": true
 }
 ```
 
@@ -68,8 +68,8 @@ OR
 
 ```json
 {
-	"status": false,
-	"message": "something went wrong"
+   "status": false,
+   "message": "something went wrong"
 }
 ```
 
