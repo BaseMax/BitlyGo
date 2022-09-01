@@ -5,21 +5,21 @@ URL Shortener - Short URLs & Custom Free Link Powered by GoLang and PostgreSQL d
 ## Dependencies
 
 - Golang 1.18+
-- [tern](https://github.com/jackc/tern) 1.13+
+- [Tern](https://github.com/jackc/tern) 1.13+ (The SQL Fan's Migrator)
 
 ## Getting started
 
-- Remove `.example` from `config.yaml` and `tern.conf`
-- Change the database connection info with your own
+- Rename `config.yaml.example` to `config.yaml`, and `tern.conf.example` to `tern.conf`;
+- Change the database connection info with your own.
 
-### Run without docker:
+### Run without docker
 
 ```bash
 cd cmd/bitlygo/
 go run main.go
 ```
 
-### Run as a docker container:
+### Run as a docker container
 
 NOTE: Make sure you changed the database connection info in `docker-compose.yaml` file
 
