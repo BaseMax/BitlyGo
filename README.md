@@ -1,20 +1,28 @@
 # Bitly Go
 
 URL Shortener - Short URLs & Custom Free Link Powered by GoLang and PostgreSQL database.
+
 ## Dependencies
+
 - Golang 1.18+
 - [tern](https://github.com/jackc/tern) 1.13+
 
 ## Getting started
+
 - Remove `.example` from `config.yaml` and `tern.conf`
 - Change the database connection info with your own
+
 ### Run without docker:
+
 ```bash
 cd cmd/bitlygo/
 go run main.go
 ```
+
 ### Run as a docker container:
+
 NOTE: Make sure you changed the database connection info in `docker-compose.yaml` file
+
 ```bash
 $ docker-compose build --no-cache
 $ docker-compose up -d
@@ -27,11 +35,14 @@ $ docker-compose up -d
 This route will show this README to show the features of the projects to everyone.
 
 ### `POST /register`
+
 - STRING `username`(required)
 - STRING `password`(required)
+
 This route will make new user if didn't exist
 
 Example response:
+
 ```json
 {
 	"username": "john",
@@ -40,8 +51,10 @@ Example response:
 ```
 
 ### `POST /login`
+
 - STRING `username` (required)
 - STRING `password` (required)
+
 This route will log into user account if exists
 
 Example response:
@@ -50,7 +63,9 @@ Example response:
 	"status": true
 }
 ```
+
 OR
+
 ```json
 {
 	"status": false,
