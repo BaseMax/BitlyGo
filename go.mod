@@ -10,7 +10,7 @@ require (
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/unrolled/render v1.5.0
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/crypto v0.17.0
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -24,6 +24,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.12.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 )
