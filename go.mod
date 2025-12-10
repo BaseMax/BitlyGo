@@ -3,7 +3,7 @@ module github.com/itsjoniur/bitlygo
 go 1.24.0
 
 require (
-	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/gomarkdown/markdown v0.0.0-20220825072242-90efaac57fb4
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgconn v1.14.3
