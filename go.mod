@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.2
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.1
 	github.com/unrolled/render v1.5.0
 	golang.org/x/crypto v0.31.0
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
